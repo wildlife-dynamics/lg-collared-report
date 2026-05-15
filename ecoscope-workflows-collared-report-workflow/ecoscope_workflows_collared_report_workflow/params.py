@@ -29,17 +29,6 @@ class SubjectObs(BaseModel):
     )
 
 
-class ZoomToEnvelope(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    expansion_factor: Optional[float] = Field(
-        1.05,
-        description="Factor to expand the bounding box (e.g., 1.2 = 20% larger)",
-        title="Expansion Factor",
-    )
-
-
 class TimezoneInfo(BaseModel):
     label: str = Field(..., title="Label")
     tzCode: str = Field(..., title="Tzcode")
@@ -210,4 +199,3 @@ class Params(BaseModel):
         None, title="Transform relocations to trajectories"
     )
     td: Optional[Td] = Field(None, title="")
-    zoom_to_envelope: Optional[ZoomToEnvelope] = Field(None, title="zoom to envelope")

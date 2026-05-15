@@ -196,7 +196,7 @@ def main(params: Params):
                 },
                 {
                     "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-                    "opacity": 0.15,
+                    "opacity": 0.1,
                     "max_zoom": 20,
                 },
             ],
@@ -247,29 +247,6 @@ def main(params: Params):
             retries=3,
             unzip=False,
             **(params_dict.get("persist_hotspot_areas") or {}),
-        )
-        .call()
-    )
-
-    persist_protected_gpkg = (
-        fetch_and_persist_file.validate()
-        .set_task_instance_id("persist_protected_gpkg")
-        .handle_errors()
-        .with_tracing()
-        .skipif(
-            conditions=[
-                any_is_empty_df,
-                any_dependency_skipped,
-            ],
-            unpack_depth=1,
-        )
-        .partial(
-            url="https://www.dropbox.com/scl/fi/i5yczgyln3zh1n8c4ppl5/lg_protected_areas.gpkg?rlkey=5ea21haq2tmsmx7g502p3qag5&st=zt6ztcku&dl=0",
-            output_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
-            overwrite_existing=False,
-            retries=3,
-            unzip=False,
-            **(params_dict.get("persist_protected_gpkg") or {}),
         )
         .call()
     )
@@ -362,27 +339,6 @@ def main(params: Params):
         .call()
     )
 
-    load_protected_areas = (
-        load_df.validate()
-        .set_task_instance_id("load_protected_areas")
-        .handle_errors()
-        .with_tracing()
-        .skipif(
-            conditions=[
-                any_is_empty_df,
-                any_dependency_skipped,
-            ],
-            unpack_depth=1,
-        )
-        .partial(
-            file_path=persist_protected_gpkg,
-            layer=None,
-            deserialize_json=False,
-            **(params_dict.get("load_protected_areas") or {}),
-        )
-        .call()
-    )
-
     reproject_ambo_boundaries = (
         reproject_gdf.validate()
         .set_task_instance_id("reproject_ambo_boundaries")
@@ -419,26 +375,6 @@ def main(params: Params):
             gdf=load_hotspot_areas,
             target_crs="EPSG:4326",
             **(params_dict.get("reproject_hotspot_areas") or {}),
-        )
-        .call()
-    )
-
-    reproject_protected_areas = (
-        reproject_gdf.validate()
-        .set_task_instance_id("reproject_protected_areas")
-        .handle_errors()
-        .with_tracing()
-        .skipif(
-            conditions=[
-                any_is_empty_df,
-                any_dependency_skipped,
-            ],
-            unpack_depth=1,
-        )
-        .partial(
-            gdf=load_protected_areas,
-            target_crs="EPSG:4326",
-            **(params_dict.get("reproject_protected_areas") or {}),
         )
         .call()
     )
@@ -481,25 +417,6 @@ def main(params: Params):
         .call()
     )
 
-    annotate_protected_layers = (
-        get_gdf_geom_type.validate()
-        .set_task_instance_id("annotate_protected_layers")
-        .handle_errors()
-        .with_tracing()
-        .skipif(
-            conditions=[
-                any_is_empty_df,
-                any_dependency_skipped,
-            ],
-            unpack_depth=1,
-        )
-        .partial(
-            gdf=reproject_protected_areas,
-            **(params_dict.get("annotate_protected_layers") or {}),
-        )
-        .call()
-    )
-
     custom_amboseli_layer = (
         create_deckgl_layer_from_gdf.validate()
         .set_task_instance_id("custom_amboseli_layer")
@@ -517,8 +434,8 @@ def main(params: Params):
             style={
                 "get_line_color": [169, 169, 169],
                 "get_fill_color": [169, 169, 169],
-                "get_line_width": 4.5,
-                "opacity": 0.55,
+                "get_line_width": 1.25,
+                "opacity": 0.45,
                 "extruded": False,
                 "stroked": True,
                 "filled": False,
@@ -549,9 +466,9 @@ def main(params: Params):
             style={
                 "get_line_color": [220, 20, 60],
                 "get_fill_color": [220, 20, 60],
-                "get_radius": 2.55,
-                "get_line_width": 1.95,
-                "opacity": 0.75,
+                "get_radius": 2.05,
+                "get_line_width": 1.25,
+                "opacity": 0.45,
                 "extruded": False,
                 "stroked": True,
                 "filled": True,
@@ -561,40 +478,6 @@ def main(params: Params):
                 "values": [{"label": "Hotspot areas", "color": "#dc143c"}],
             },
             **(params_dict.get("custom_hotspot_layer") or {}),
-        )
-        .call()
-    )
-
-    custom_protected_layer = (
-        create_deckgl_layer_from_gdf.validate()
-        .set_task_instance_id("custom_protected_layer")
-        .handle_errors()
-        .with_tracing()
-        .skipif(
-            conditions=[
-                any_is_empty_df,
-                any_dependency_skipped,
-            ],
-            unpack_depth=1,
-        )
-        .partial(
-            gdf=annotate_protected_layers,
-            style={
-                "get_line_color": [77, 102, 0],
-                "get_fill_color": [77, 102, 0],
-                "get_line_width": 1.95,
-                "opacity": 0.35,
-                "extruded": False,
-                "stroked": True,
-                "filled": True,
-            },
-            legend={
-                "title": "",
-                "values": [
-                    {"label": "National parks and reserves", "color": "#4d6600"}
-                ],
-            },
-            **(params_dict.get("custom_protected_layer") or {}),
         )
         .call()
     )
@@ -905,8 +788,8 @@ def main(params: Params):
         .partial(
             layer_style={
                 "get_fill_color": "percentile_colormap",
-                "opacity": 0.55,
-                "get_line_width": 1.55,
+                "opacity": 0.45,
+                "get_line_width": 1.15,
                 "stroked": True,
             },
             legend={
@@ -937,7 +820,6 @@ def main(params: Params):
             static_layers=[
                 custom_amboseli_layer,
                 custom_hotspot_layer,
-                custom_protected_layer,
                 create_hotspot_text_layer,
             ],
             **(params_dict.get("combine_custom_map_layers") or {}),
@@ -957,7 +839,7 @@ def main(params: Params):
             ],
             unpack_depth=1,
         )
-        .partial(**(params_dict.get("zoom_to_envelope") or {}))
+        .partial(expansion_factor=1.0, **(params_dict.get("zoom_to_envelope") or {}))
         .mapvalues(argnames=["gdf"], argvalues=td_colormap)
     )
 
@@ -989,7 +871,7 @@ def main(params: Params):
             ],
             unpack_depth=1,
         )
-        .partial(max_zoom=20, **(params_dict.get("zoom_speed_gdf_extent") or {}))
+        .partial(max_zoom=10, **(params_dict.get("zoom_speed_gdf_extent") or {}))
         .mapvalues(argnames=["gdf"], argvalues=zoom_to_envelope)
     )
 
@@ -1028,7 +910,7 @@ def main(params: Params):
             tile_layers=base_map_defs,
             static=False,
             title=None,
-            max_zoom=15,
+            max_zoom=10,
             legend_style={"placement": "bottom-right", "title": "ETD Metrics"},
             **(params_dict.get("td_ecomap") or {}),
         )
@@ -1235,8 +1117,8 @@ def main(params: Params):
         )
         .partial(
             layer_style={
-                "get_color": [0, 0, 255],
-                "get_width": 1.55,
+                "get_color": [30, 144, 255],
+                "get_width": 1.25,
                 "width_scale": 1,
                 "width_min_pixels": 2,
                 "width_max_pixels": 8,
@@ -1244,12 +1126,12 @@ def main(params: Params):
                 "cap_rounded": True,
                 "joint_rounded": True,
                 "billboard": False,
-                "opacity": 0.55,
+                "opacity": 0.45,
                 "stroked": True,
             },
             legend={
-                "title": "Subject tracks",
-                "values": [{"label": "Tracks", "color": "#0000ff"}],
+                "title": "Subject Tracks",
+                "values": [{"label": "Tracks", "color": "#1e90ff"}],
             },
             **(params_dict.get("generate_track_layers") or {}),
         )
@@ -1272,7 +1154,6 @@ def main(params: Params):
             static_layers=[
                 custom_amboseli_layer,
                 custom_hotspot_layer,
-                custom_protected_layer,
                 create_hotspot_text_layer,
             ],
             **(params_dict.get("combine_track_layers") or {}),
@@ -1315,7 +1196,7 @@ def main(params: Params):
             tile_layers=base_map_defs,
             static=False,
             title=None,
-            max_zoom=15,
+            max_zoom=10,
             legend_style={"placement": "bottom-right"},
             **(params_dict.get("draw_track_map") or {}),
         )

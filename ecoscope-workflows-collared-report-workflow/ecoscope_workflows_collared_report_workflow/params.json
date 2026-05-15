@@ -180,20 +180,6 @@
       "required": [],
       "type": "object",
       "title": ""
-    },
-    "zoom_to_envelope": {
-      "additionalProperties": false,
-      "properties": {
-        "expansion_factor": {
-          "default": 1.05,
-          "title": "Expansion Factor",
-          "type": "number",
-          "description": "Factor to expand the bounding box (e.g., 1.2 = 20% larger)"
-        }
-      },
-      "required": [],
-      "type": "object",
-      "title": "zoom to envelope"
     }
   },
   "$defs": {
@@ -432,8 +418,7 @@
       "er_client_name",
       "subject_obs",
       "subject_traj",
-      "td",
-      "zoom_to_envelope"
+      "td"
     ]
   },
   "additionalProperties": false

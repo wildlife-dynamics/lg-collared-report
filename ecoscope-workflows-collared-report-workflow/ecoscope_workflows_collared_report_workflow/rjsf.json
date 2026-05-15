@@ -185,20 +185,6 @@
           "required": [],
           "type": "object",
           "title": ""
-        },
-        "zoom_to_envelope": {
-          "additionalProperties": false,
-          "properties": {
-            "expansion_factor": {
-              "default": 1.05,
-              "title": "Expansion Factor",
-              "type": "number",
-              "description": "Factor to expand the bounding box (e.g., 1.2 = 20% larger)"
-            }
-          },
-          "required": [],
-          "type": "object",
-          "title": "zoom to envelope"
         }
       }
     }
@@ -439,10 +425,6 @@
       ]
     },
     "Time density map": {
-      "ui:order": [
-        "td",
-        "zoom_to_envelope"
-      ],
       "td": {
         "ui:order": [
           "auto_scale_or_custom_cell_size",
