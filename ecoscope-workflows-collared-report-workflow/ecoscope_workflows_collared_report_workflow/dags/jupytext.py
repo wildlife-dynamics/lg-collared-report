@@ -211,7 +211,7 @@ groupers = (
 
 
 # %% [markdown]
-# ## Data Source
+# ## Connect to EarthRanger
 
 # %%
 # parameters
@@ -868,9 +868,7 @@ persist_relocs = (
 # %%
 # parameters
 
-subject_traj_params = dict(
-    trajectory_segment_filter=...,
-)
+subject_traj_params = dict()
 
 # %%
 # call the task
@@ -887,7 +885,18 @@ subject_traj = (
         ],
         unpack_depth=1,
     )
-    .partial(relocations=subject_reloc, **subject_traj_params)
+    .partial(
+        relocations=subject_reloc,
+        trajectory_segment_filter={
+            "min_length_meters": 10,
+            "max_length_meters": 10000,
+            "min_time_secs": 10,
+            "max_time_secs": 21600,
+            "min_speed_kmhr": 1,
+            "max_speed_kmhr": 30,
+        },
+        **subject_traj_params,
+    )
     .call()
 )
 
@@ -1069,11 +1078,7 @@ split_subject_traj_groups = (
 # %%
 # parameters
 
-td_params = dict(
-    auto_scale_or_custom_cell_size=...,
-    max_speed_factor=...,
-    expansion_factor=...,
-)
+td_params = dict()
 
 # %%
 # call the task
@@ -1091,6 +1096,9 @@ td = (
         unpack_depth=1,
     )
     .partial(
+        auto_scale_or_custom_cell_size={"auto_scale_or_customize": "Auto-scale"},
+        max_speed_factor=1.05,
+        expansion_factor=1.3,
         crs="ESRI:53042",
         percentiles=[50.0, 60.0, 70.0, 80.0, 90.0, 95.0, 99.0],
         nodata_value="nan",
@@ -2632,7 +2640,7 @@ total_distance_sv_widget = (
 
 
 # %% [markdown]
-# ## Lion Guardians dashboard
+# ## Lion Guardians Dashboard
 
 # %%
 # parameters

@@ -764,6 +764,14 @@ def main(params: Params):
             .set_executor("lithops"),
             partial={
                 "relocations": DependsOn("subject_reloc"),
+                "trajectory_segment_filter": {
+                    "min_length_meters": 10,
+                    "max_length_meters": 10000,
+                    "min_time_secs": 10,
+                    "max_time_secs": 21600,
+                    "min_speed_kmhr": 1,
+                    "max_speed_kmhr": 30,
+                },
             }
             | (params_dict.get("subject_traj") or {}),
             method="call",
@@ -901,6 +909,11 @@ def main(params: Params):
             )
             .set_executor("lithops"),
             partial={
+                "auto_scale_or_custom_cell_size": {
+                    "auto_scale_or_customize": "Auto-scale",
+                },
+                "max_speed_factor": 1.05,
+                "expansion_factor": 1.3,
                 "crs": "ESRI:53042",
                 "percentiles": [
                     50.0,

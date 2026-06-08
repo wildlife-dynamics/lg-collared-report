@@ -4,10 +4,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
-from typing import List, Literal, Optional, Union
+from typing import List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, confloat
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class WorkflowDetails(BaseModel):
@@ -52,52 +51,6 @@ class EarthRangerConnection(BaseModel):
     name: str = Field(..., title="Data Source")
 
 
-class TrajectorySegmentFilter(BaseModel):
-    min_length_meters: Optional[confloat(ge=0.001)] = Field(
-        0.001, title="Minimum Segment Length (Meters)"
-    )
-    max_length_meters: Optional[confloat(gt=0.001)] = Field(
-        100000, title="Maximum Segment Length (Meters)"
-    )
-    min_time_secs: Optional[confloat(ge=1.0)] = Field(
-        1, title="Minimum Segment Duration (Seconds)"
-    )
-    max_time_secs: Optional[confloat(gt=1.0)] = Field(
-        172800, title="Maximum Segment Duration (Seconds)"
-    )
-    min_speed_kmhr: Optional[confloat(gt=0.001)] = Field(
-        0.01, title="Minimum Segment Speed (Kilometers per Hour)"
-    )
-    max_speed_kmhr: Optional[confloat(gt=0.001)] = Field(
-        500, title="Maximum Segment Speed (Kilometers per Hour)"
-    )
-
-
-class AutoScaleOrCustom(str, Enum):
-    Auto_scale = "Auto-scale"
-
-
-class AutoScaleGridCellSize(BaseModel):
-    auto_scale_or_custom: Literal["Auto-scale"] = Field(
-        "Auto-scale", title="Grid Cell Size"
-    )
-
-
-class AutoScaleOrCustom1(str, Enum):
-    Customize = "Customize"
-
-
-class CustomGridCellSize(BaseModel):
-    auto_scale_or_custom: Literal["Customize"] = Field(
-        "Customize", title="Grid Cell Size"
-    )
-    grid_cell_size: Optional[confloat(lt=10000.0, gt=0.0)] = Field(
-        5000,
-        description="Define the resolution of the raster grid (in the unit of measurement defined by the coordinate reference system set below). A smaller grid cell size provides more detail, while a larger size generalizes the data.",
-        title="Custom Grid Cell Size",
-    )
-
-
 class TimeRange(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -132,54 +85,6 @@ class ErClientName(BaseModel):
     )
 
 
-class SubjectTraj(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    trajectory_segment_filter: Optional[TrajectorySegmentFilter] = Field(
-        default_factory=lambda: TrajectorySegmentFilter.model_validate(
-            {
-                "min_length_meters": 0.001,
-                "max_length_meters": 100000,
-                "min_time_secs": 1,
-                "max_time_secs": 172800,
-                "min_speed_kmhr": 0.01,
-                "max_speed_kmhr": 500,
-            }
-        ),
-        description="Filter track data by setting limits on track segment length, duration, and speed. Segments outside these bounds are removed, reducing noise and to focus on meaningful movement patterns.",
-        title=" ",
-    )
-
-
-class Td(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    auto_scale_or_custom_cell_size: Optional[
-        Union[AutoScaleGridCellSize, CustomGridCellSize]
-    ] = Field(
-        default_factory=lambda: AutoScaleGridCellSize.model_validate(
-            {"auto_scale_or_custom": "Auto-scale"}
-        ),
-        title="Grid Cell Size",
-    )
-    max_speed_factor: Optional[float] = Field(
-        1.05,
-        description="An estimate of the subject's maximum speed as a factor of the maximum measured speed value in the dataset.",
-        title="Max Speed Factor (Kilometers per Hour)",
-    )
-    expansion_factor: Optional[float] = Field(
-        1.05,
-        description="Controls how far time density values spread across the grid, affecting the smoothness of the output.",
-        title="Shape Buffer Expansion Factor",
-    )
-
-
-class TimeDensityMap(BaseModel):
-    td: Optional[Td] = Field(None, title="")
-
-
 class FormData(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -195,15 +100,7 @@ class FormData(BaseModel):
         title="Define time range",
     )
     groupers: Optional[Groupers] = Field(None, title="Set Groupers")
-    er_client_name: Optional[ErClientName] = Field(None, title="Data Source")
+    er_client_name: Optional[ErClientName] = Field(None, title="Connect to EarthRanger")
     subject_obs: Optional[SubjectObs] = Field(
         None, title="Get Subject Group observations from EarthRanger"
-    )
-    subject_traj: Optional[SubjectTraj] = Field(
-        None, title="Transform relocations to trajectories"
-    )
-    Time_density_map: Optional[TimeDensityMap] = Field(
-        None,
-        alias="Time density map",
-        description="These settings show a grid-based heatmap showing where subjects spent the most time.",
     )

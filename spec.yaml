@@ -63,7 +63,7 @@ workflow:
     task: set_groupers
 
   #connect to ER
-  - name: Data Source
+  - name: Connect to EarthRanger
     id: er_client_name
     task: set_er_connection
 
@@ -103,16 +103,6 @@ workflow:
       retries: 3
       unzip: false
 
-  # - name: Download protected areas gpkg
-  #   id: persist_protected_gpkg
-  #   task: fetch_and_persist_file
-  #   partial:
-  #     url: https://www.dropbox.com/scl/fi/i5yczgyln3zh1n8c4ppl5/lg_protected_areas.gpkg?rlkey=5ea21haq2tmsmx7g502p3qag5&st=zt6ztcku&dl=0
-  #     output_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
-  #     overwrite_existing: false
-  #     retries: 3
-  #     unzip: false
-
   - name: Download collared lions cover page
     id: persist_cover_page
     task: fetch_and_persist_file
@@ -149,14 +139,6 @@ workflow:
       layer: null
       deserialize_json: false
 
-  # - name: Load protected areas
-  #   id: load_protected_areas
-  #   task: load_df
-  #   partial:
-  #     file_path: ${{ workflow.persist_protected_gpkg.return }}
-  #     layer: null
-  #     deserialize_json: false
-
   - name: Reproject gdf to 4326 for ambo layers
     id: reproject_ambo_boundaries
     task: reproject_gdf
@@ -171,13 +153,6 @@ workflow:
       gdf: ${{ workflow.load_hotspot_areas.return }}
       target_crs: "EPSG:4326"
 
-  # - name: Reproject gdf to 4326 for protected areas
-  #   id: reproject_protected_areas
-  #   task: reproject_gdf
-  #   partial:
-  #     gdf: ${{ workflow.load_protected_areas.return }}
-  #     target_crs: "EPSG:4326"
-
   - name: Annotate amboseli layers with geom type
     id: annotate_ambo_layers
     task: get_gdf_geom_type
@@ -189,12 +164,6 @@ workflow:
     task: get_gdf_geom_type
     partial:
       gdf: ${{ workflow.reproject_hotspot_areas.return }}
-
-  # - name: Annotate protected areas with geom type
-  #   id: annotate_protected_layers
-  #   task: get_gdf_geom_type
-  #   partial:
-  #     gdf: ${{ workflow.reproject_protected_areas.return }}
 
   - name: Create layer for amboseli group ranch
     id: custom_amboseli_layer
@@ -234,25 +203,6 @@ workflow:
         values:
           - label: Hotspot areas
             color: "#dc143c"
-
-  # - name: Create layer for protected areas
-  #   id: custom_protected_layer
-  #   task: create_deckgl_layer_from_gdf
-  #   partial:
-  #     gdf: ${{ workflow.annotate_protected_layers.return }}
-  #     style:
-  #       get_line_color: [77, 102, 0]
-  #       get_fill_color: [77, 102, 0]
-  #       get_line_width: 1.95
-  #       opacity: 0.35
-  #       extruded: false
-  #       stroked: true
-  #       filled: true
-  #     legend:
-  #       title: ""
-  #       values:
-  #         - label: National parks and reserves
-  #           color: "#4d6600"
 
   - name: Create text layer for conflict hotspots
     id: create_hotspot_text_layer
@@ -330,6 +280,13 @@ workflow:
     task: relocations_to_trajectory
     partial:
       relocations: ${{ workflow.subject_reloc.return }}
+      trajectory_segment_filter: 
+        min_length_meters: 10
+        max_length_meters: 10000
+        min_time_secs: 10
+        max_time_secs: 21600
+        min_speed_kmhr: 1
+        max_speed_kmhr: 30
 
   - name: Persist trajectories
     id: persist_trajs
@@ -398,6 +355,10 @@ workflow:
         id: td
         task: calculate_elliptical_time_density
         partial:
+          auto_scale_or_custom_cell_size: 
+            auto_scale_or_customize: Auto-scale      
+          max_speed_factor: 1.05 
+          expansion_factor: 1.3
           crs: ESRI:53042
           percentiles:
             - 50.000000
@@ -457,7 +418,6 @@ workflow:
           static_layers:
             - ${{ workflow.custom_amboseli_layer.return }}
             - ${{ workflow.custom_hotspot_layer.return }}
-            # - ${{ workflow.custom_protected_layer.return }}
             - ${{ workflow.create_hotspot_text_layer.return }}
         mapvalues:
           argnames: grouped_layers
@@ -665,7 +625,6 @@ workflow:
       static_layers:
         - ${{ workflow.custom_amboseli_layer.return }}
         - ${{ workflow.custom_hotspot_layer.return }}
-        # - ${{ workflow.custom_protected_layer.return }}
         - ${{ workflow.create_hotspot_text_layer.return }}
     mapvalues:
       argnames: grouped_layers
@@ -830,18 +789,6 @@ workflow:
       df: ${{ workflow.traj_add_temporal_index.return }}
       column_name: groupby_col
 
-  # - name: Get user name to use on template
-  #   id: get_user_name
-  #   task: get_current_user
-  #   partial:
-  #     client: ${{ workflow.er_client_name.return }}
-
-  # - name: Get user full name
-  #   id: get_fullname
-  #   task: get_user_full_name
-  #   partial:
-  #     user: ${{ workflow.get_user_name.return }}
-
   - name: Create cover template context
     id: create_cover_tpl_context
     task: create_cl_ctx_cover
@@ -990,7 +937,7 @@ workflow:
     partial:
       widgets: ${{ workflow.total_distance_widgets.return }}
 
-  - name: Lion Guardians dashboard
+  - name: Lion Guardians Dashboard
     id: lg_dashboard
     task: gather_dashboard
     partial:

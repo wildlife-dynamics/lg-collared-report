@@ -173,19 +173,18 @@ def build():
         ),
 
         sp(6), h2("2.3 Static Geodata Files"),
-        p("Three boundary datasets are downloaded from Dropbox and cached locally:"),
+        p("Two boundary datasets are downloaded from Dropbox and cached locally:"),
         make_table(
             [
                 [c("Dataset"),                       c("File"),                          c("Purpose")],
                 [c("Group Ranch Boundaries"),        c("lg_group_ranch_boundaries.gpkg"), c("Community ranch polygons in Amboseli")],
                 [c("Conflict Hotspot Areas"),        c("lg_conflict_hotspots.gpkg"),      c("Known human–lion conflict hotspot features")],
-                [c("Protected Areas"),               c("lg_protected_areas.gpkg"),        c("National parks and reserves")],
             ],
             [4*cm, 5*cm, 7.5*cm],
         ),
         sp(4),
         p(
-            "All three files use <code>overwrite_existing: false</code> (3 retries). "
+            "Both files use <code>overwrite_existing: false</code> (3 retries). "
             "After loading, each is reprojected to <b>EPSG:4326</b> and annotated with "
             "its geometry type before layer creation."
         ),
@@ -205,14 +204,14 @@ def build():
             [
                 [c("Layer"),                   c("Opacity"), c("Max zoom")],
                 [c("ArcGIS World Hillshade"),   c("100 %"),   c("20")],
-                [c("ArcGIS World Street Map"),  c("15 %"),    c("20")],
+                [c("ArcGIS World Street Map"),  c("10 %"),    c("20")],
             ],
             [10*cm, 2.5*cm, 4*cm],
         ),
         sp(4),
         p(
             "The hillshade provides full-opacity terrain context. "
-            "The street map is overlaid at 15 % to show road networks and "
+            "The street map is overlaid at 10 % to show road networks and "
             "settlement names without obscuring the hillshade or data layers."
         ),
     ]
@@ -251,9 +250,23 @@ def build():
             "<code>relocations_to_trajectory</code> connects consecutive fixes per subject "
             "into LineString segments, adding <code>dist_meters</code>, "
             "<code>speed_kmhr</code>, <code>segment_start</code>, and "
-            "<code>segment_end</code>. Trajectories are persisted as "
-            "<code>trajectories.geoparquet</code>."
+            "<code>segment_end</code>. A <code>trajectory_segment_filter</code> removes "
+            "biologically implausible segments before analysis:"
         ),
+        make_table(
+            [
+                [c("Filter parameter"),       c("Default"), c("Description")],
+                [c("min_length_meters"),       c("10"),      c("Discard segments shorter than 10 m")],
+                [c("max_length_meters"),       c("10 000"),  c("Discard segments longer than 10 km")],
+                [c("min_time_secs"),           c("10"),      c("Discard segments shorter than 10 s")],
+                [c("max_time_secs"),           c("21 600"),  c("Discard segments longer than 6 hours")],
+                [c("min_speed_kmhr"),          c("1"),       c("Discard segments below 1 km/h average speed")],
+                [c("max_speed_kmhr"),          c("30"),      c("Discard segments above 30 km/h average speed")],
+            ],
+            [4.5*cm, 2*cm, 10*cm],
+        ),
+        sp(4),
+        p("Trajectories are persisted as <code>trajectories.geoparquet</code>."),
 
         sp(4), h2("3.3 Temporal Index &amp; Speed Classification"),
         p(
@@ -290,7 +303,7 @@ def build():
     story += [
         sp(4), h1("4. Static Map Layers"), hr(),
         p(
-            "Four static layers are built once and composited onto every subject-level map "
+            "Three static layers are built once and composited onto every subject-level map "
             "to provide spatial context."
         ),
 
@@ -298,12 +311,10 @@ def build():
         make_table(
             [
                 [c("Layer"),             c("Colour (RGB)"),       c("Opacity"), c("Filled"), c("Notes")],
-                [c("Group Ranch Boundaries"), c("(169, 169, 169) grey"),  c("55 %"), c("No"),
-                 c("Outline only, line width 4.5")],
-                [c("Conflict Hotspots"), c("(220, 20, 60) crimson"), c("75 %"),  c("Yes"),
-                 c("Point radius 2.55, line width 1.95")],
-                [c("Protected Areas"),   c("(77, 102, 0) dark green"), c("35 %"), c("Yes"),
-                 c("Line width 1.95")],
+                [c("Group Ranch Boundaries"), c("(169, 169, 169) grey"),  c("45 %"), c("No"),
+                 c("Outline only, line width 1.25")],
+                [c("Conflict Hotspots"), c("(220, 20, 60) crimson"), c("45 %"),  c("Yes"),
+                 c("Point radius 2.05, line width 1.25")],
                 [c("Hotspot Text Labels"), c("(20, 20, 20) near-black"), c("—"),  c("—"),
                  c("Arial, 1 000 m base, 40–75 px clamp, centroid-anchored")],
             ],
@@ -323,23 +334,25 @@ def build():
         ),
         make_table(
             [
-                [c("Parameter"),    c("Value"),       c("Meaning")],
-                [c("CRS"),          c("ESRI:53042"),  c("World Azimuthal Equidistant — equal-area, minimises distortion")],
-                [c("percentiles"),  c("50, 60, 70, 80, 90, 95, 99"), c("Contour probability thresholds extracted as polygons")],
-                [c("band_count"),   c("1"),           c("Single density band output")],
-                [c("nodata_value"), c("NaN"),         c("Cells outside probability mass are transparent")],
+                [c("Parameter"),         c("Value"),       c("Meaning")],
+                [c("CRS"),               c("ESRI:53042"),  c("World Azimuthal Equidistant — equal-area, minimises distortion")],
+                [c("percentiles"),       c("50, 60, 70, 80, 90, 95, 99"), c("Contour probability thresholds extracted as polygons")],
+                [c("max_speed_factor"),  c("1.05"),        c("Estimated max speed as a multiple of the measured maximum; bounds the kernel spread")],
+                [c("expansion_factor"),  c("1.3"),         c("Shape buffer expansion — controls how far density values spread across the grid")],
+                [c("band_count"),        c("1"),           c("Single density band output")],
+                [c("nodata_value"),      c("NaN"),         c("Cells outside probability mass are transparent")],
             ],
-            [3*cm, 4*cm, 9.5*cm],
+            [3.5*cm, 3.5*cm, 9.5*cm],
         ),
         sp(4),
         p(
             "Contour polygons are coloured with the <b>RdYlGn</b> diverging colormap "
             "(innermost 50th percentile = red, outermost 99th = green). "
-            "Map opacity is 55 %, legend title: <i>Home Range Percentiles</i>."
+            "Map opacity is 45 %, legend title: <i>Home Range Percentiles</i>."
         ),
         p(
             "The map view is auto-zoomed via <code>envelope_gdf</code> + "
-            "<code>custom_view_state_from_gdf</code> (pitch 0, bearing 0, max zoom 20). "
+            "<code>custom_view_state_from_gdf</code> (pitch 0, bearing 0, max zoom 10). "
             "An interactive HTML is persisted (suffix: <code>homerange</code>) then "
             "converted to PNG via <code>adjust_map_zoom_and_screenshot</code> "
             "(2× device scale factor, 40 s tile-load wait)."
@@ -353,10 +366,10 @@ def build():
         make_table(
             [
                 [c("Property"),       c("Value")],
-                [c("Colour"),         c("RGB(0, 0, 255) — blue")],
-                [c("Width"),          c("1.55 px, min 2 px, max 8 px (screen-space)")],
+                [c("Colour"),         c("RGB(30, 144, 255) — dodger blue")],
+                [c("Width"),          c("1.25 px, min 2 px, max 8 px (screen-space)")],
                 [c("Cap / Join"),     c("Rounded")],
-                [c("Opacity"),        c("55 %")],
+                [c("Opacity"),        c("45 %")],
             ],
             [4.5*cm, 12*cm],
         ),
@@ -516,8 +529,8 @@ def build():
             [
                 [c("Stage"),             c("Tasks")],
                 [c("Setup"),             c("EarthRanger connection, time range, groupers, base maps")],
-                [c("Geodata download"),  c("3 boundary files + 2 Word templates from Dropbox")],
-                [c("Static layers"),     c("Ranch, hotspot, protected area, hotspot text layers")],
+                [c("Geodata download"),  c("2 boundary files + 2 Word templates from Dropbox")],
+                [c("Static layers"),     c("Ranch, hotspot, hotspot text layers")],
                 [c("Telemetry ingest"),  c("Observations → relocations → trajectories → speed bins → rename → split")],
                 [c("Home Range branch"), c("ETD → colormap → map layer → compose → view state → HTML → PNG → widget")],
                 [c("Tracks branch"),     c("Path layer → compose → draw map → HTML → PNG → widget")],

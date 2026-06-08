@@ -23,7 +23,7 @@ Before running the workflow, ensure you have:
 - Access to an **EarthRanger** instance with a configured data source
 - The **Subject Group Name** of the collared lions exactly as it appears in EarthRanger
 
-> The three spatial boundary files (group ranch boundaries, conflict hotspot areas, and protected areas) are downloaded automatically from Dropbox — no local copies are required.
+> The two spatial boundary files (group ranch boundaries and conflict hotspot areas) are downloaded automatically from Dropbox — no local copies are required.
 
 ---
 
@@ -92,7 +92,7 @@ All movement data, trajectories, and home ranges are computed within this window
 
 ---
 
-### Step 5 — Set Groupers, Data Source, and Subject Group
+### Step 5 — Set Groupers, Connect to EarthRanger, and Subject Group
 
 Scroll down to configure three sections.
 
@@ -106,9 +106,9 @@ Groupers control how the workflow partitions subjects for per-group outputs. If 
 | Subject Sex | Aggregate outputs by sex (M / F) |
 | Subject Subtype | Aggregate outputs by subtype |
 
-**Data Source**
+**Connect to EarthRanger**
 
-Select the EarthRanger data source configured in Step 1 from the **Data Source** dropdown.
+Select the EarthRanger data source configured in Step 1 from the **Connect to EarthRanger** dropdown.
 
 **Get Subject Group observations from EarthRanger**
 
@@ -126,12 +126,12 @@ Expand **Advanced Configurations** under **Transform relocations to trajectories
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Minimum Segment Length (m) | `0.001` | Discard segments shorter than this distance |
-| Maximum Segment Length (m) | `100000` | Discard segments longer than this distance |
-| Minimum Segment Duration (s) | `1` | Discard segments shorter than this duration |
-| Maximum Segment Duration (s) | `172800` | Discard segments longer than this duration (48 hours) |
-| Minimum Segment Speed (km/h) | `0.01` | Discard segments below this average speed |
-| Maximum Segment Speed (km/h) | `500` | Discard segments above this average speed |
+| Minimum Segment Length (m) | `10` | Discard segments shorter than this distance |
+| Maximum Segment Length (m) | `10000` | Discard segments longer than this distance |
+| Minimum Segment Duration (s) | `10` | Discard segments shorter than this duration |
+| Maximum Segment Duration (s) | `21600` | Discard segments longer than this duration (6 hours) |
+| Minimum Segment Speed (km/h) | `1` | Discard segments below this average speed |
+| Maximum Segment Speed (km/h) | `30` | Discard segments above this average speed |
 
 Adjust these values to suit the movement characteristics of your collared lions.
 
@@ -149,13 +149,13 @@ Expand **Advanced Configurations** under **Time density map** to control the hom
 |-------|---------|-------------|
 | Grid Cell Size | `Auto-scale` | Cell size of the density raster — Auto-scale derives it from data density |
 | Max Speed Factor | `1.05` | Estimate of the subject's maximum speed as a factor of the maximum measured speed in the dataset |
-| Shape Buffer Expansion Factor | `1.05` | Controls how far time density values spread across the grid, affecting the smoothness of the output |
+| Shape Buffer Expansion Factor | `1.3` | Controls how far time density values spread across the grid, affecting the smoothness of the output |
 
 **Zoom to envelope**
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Expansion Factor | `1.05` | Factor to expand the bounding box around the data extent before zooming (e.g. `1.2` = 20% larger) |
+| Expansion Factor | `1.00` | Factor to expand the bounding box around the data extent before zooming (e.g. `1.2` = 20% larger) |
 
 A value of `1.0` gives a tight fit to the data; increasing it adds padding around the map extent.
 
@@ -168,7 +168,7 @@ A value of `1.0` gives a tight fit to the data; increasing it adds padding aroun
 Once all parameters are configured, click **Submit**. The runner will:
 
 1. Pull movement data from EarthRanger for the specified subject group and time range.
-2. Download the static boundary files (group ranches, conflict hotspots, protected areas).
+2. Download the static boundary files (group ranches, conflict hotspots).
 3. Convert observations to relocations and build trajectory segments.
 4. Compute Elliptical Time Density home ranges per group.
 5. Generate the Home Range and Subject Tracks maps (interactive HTML + PNG screenshots).
