@@ -58,35 +58,7 @@
       ],
       "type": "object",
       "description": "Choose the period of time to analyze.",
-      "title": "Define time range"
-    },
-    "groupers": {
-      "additionalProperties": false,
-      "properties": {
-        "groupers": {
-          "default": null,
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/$defs/ValueGrouper"
-              },
-              {
-                "$ref": "#/$defs/TemporalGrouper"
-              },
-              {
-                "$ref": "#/$defs/SpatialGrouper"
-              }
-            ],
-            "title": "Group by"
-          },
-          "title": " ",
-          "type": "array",
-          "description": "            Specify how the data should be grouped to create the views for your dashboard.\n            This field is optional; if left blank, all the data will appear in a single view.\n            "
-        }
-      },
-      "type": "object",
-      "required": [],
-      "title": "Set Groupers"
+      "title": "Define Time Range"
     },
     "er_client_name": {
       "additionalProperties": false,
@@ -117,6 +89,72 @@
       ],
       "type": "object",
       "title": "Get Subject Group observations from EarthRanger"
+    },
+    "Map Zoom & Extent": {
+      "type": "object",
+      "description": "Calculate the geographic extent of the movement tracks and determine an appropriate zoom level and center point for the map. This ensures that all tracks are visible and well-framed when the map is rendered.",
+      "ecoscope:task_group": true,
+      "properties": {
+        "zoom_to_envelope": {
+          "additionalProperties": false,
+          "properties": {
+            "expansion_factor": {
+              "default": 1.5,
+              "title": "Expansion Factor",
+              "type": "number",
+              "description": "Factor to expand the bounding box (e.g., 1.2 = 20% larger)",
+              "ecoscope:advanced": true
+            }
+          },
+          "required": [],
+          "type": "object",
+          "title": ""
+        }
+      }
+    },
+    "Time density map": {
+      "type": "object",
+      "description": "These settings show a grid-based heatmap showing where subjects spent the most time.",
+      "ecoscope:task_group": true,
+      "properties": {
+        "td": {
+          "additionalProperties": false,
+          "properties": {
+            "auto_scale_or_custom_cell_size": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/AutoScaleGridCellSize"
+                },
+                {
+                  "$ref": "#/$defs/CustomGridCellSize"
+                }
+              ],
+              "default": {
+                "auto_scale_or_custom": "Auto-scale"
+              },
+              "title": "Grid Cell Size",
+              "ecoscope:advanced": true
+            },
+            "max_speed_factor": {
+              "default": 1.05,
+              "title": "Max Speed Factor (Kilometers per Hour)",
+              "type": "number",
+              "description": "An estimate of the subject's maximum speed as a factor of the maximum measured speed value in the dataset.",
+              "ecoscope:advanced": true
+            },
+            "expansion_factor": {
+              "default": 1.05,
+              "title": "Shape Buffer Expansion Factor",
+              "type": "number",
+              "description": "Controls how far time density values spread across the grid, affecting the smoothness of the output.",
+              "ecoscope:advanced": true
+            }
+          },
+          "required": [],
+          "type": "object",
+          "title": ""
+        }
+      }
     }
   },
   "$defs": {
@@ -148,64 +186,59 @@
       "title": "TimezoneInfo",
       "type": "object"
     },
-    "SpatialGrouper": {
+    "EarthRangerConnection": {
       "properties": {
-        "spatial_index_name": {
-          "title": "Spatial Regions",
+        "name": {
+          "title": "Data Source",
           "type": "string"
         }
       },
       "required": [
-        "spatial_index_name"
+        "name"
       ],
-      "title": "Spatial",
+      "title": "EarthRangerConnection",
       "type": "object"
     },
-    "TemporalGrouper": {
+    "AutoScaleGridCellSize": {
       "properties": {
-        "temporal_index": {
-          "oneOf": [
-            {
-              "const": "%Y",
-              "title": "Year (example: 2024)"
-            },
-            {
-              "const": "%B",
-              "title": "Month (example: September)"
-            },
-            {
-              "const": "%Y-%m",
-              "title": "Year and Month (example: 2023-01)"
-            },
-            {
-              "const": "%j",
-              "title": "Day of the year as a number (example: 365)"
-            },
-            {
-              "const": "%d",
-              "title": "Day of the month as a number (example: 31)"
-            },
-            {
-              "const": "%A",
-              "title": "Day of the week (example: Sunday)"
-            },
-            {
-              "const": "%H",
-              "title": "Hour (24-hour clock) as number (example: 22)"
-            },
-            {
-              "const": "%Y-%m-%d",
-              "title": "Date (example: 2025-01-31)"
-            }
+        "auto_scale_or_custom": {
+          "const": "Auto-scale",
+          "default": "Auto-scale",
+          "ecoscope:advanced": true,
+          "enum": [
+            "Auto-scale"
           ],
-          "title": "Time",
+          "title": "Grid Cell Size",
           "type": "string"
         }
       },
-      "required": [
-        "temporal_index"
-      ],
-      "title": "Time",
+      "title": "Auto-scale",
+      "type": "object"
+    },
+    "CustomGridCellSize": {
+      "properties": {
+        "auto_scale_or_custom": {
+          "const": "Customize",
+          "default": "Customize",
+          "ecoscope:advanced": true,
+          "enum": [
+            "Customize"
+          ],
+          "title": "Grid Cell Size",
+          "type": "string"
+        },
+        "grid_cell_size": {
+          "default": 5000,
+          "description": "Define the resolution of the raster grid (in the unit of measurement defined by the coordinate reference system set below). A smaller grid cell size provides more detail, while a larger size generalizes the data.",
+          "exclusiveMaximum": 10000,
+          "exclusiveMinimum": 0,
+          "gt": 0,
+          "lt": 10000,
+          "title": "Custom Grid Cell Size",
+          "type": "number"
+        }
+      },
+      "title": "Customize",
       "type": "object"
     },
     "ValueGrouper": {
@@ -224,29 +257,9 @@
               "const": "subject_subtype",
               "title": "Subject Subtype"
             }
-          ],
-          "title": "Category",
-          "type": "string"
+          ]
         }
-      },
-      "required": [
-        "index_name"
-      ],
-      "title": "Category",
-      "type": "object"
-    },
-    "EarthRangerConnection": {
-      "properties": {
-        "name": {
-          "title": "Data Source",
-          "type": "string"
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "title": "EarthRangerConnection",
-      "type": "object"
+      }
     }
   },
   "uiSchema": {
@@ -264,12 +277,22 @@
         "time_format"
       ]
     },
+    "Time density map": {
+      "td": {
+        "ui:order": [
+          "auto_scale_or_custom_cell_size",
+          "max_speed_factor",
+          "expansion_factor"
+        ]
+      }
+    },
     "ui:order": [
       "workflow_details",
       "time_range",
-      "groupers",
       "er_client_name",
-      "subject_obs"
+      "subject_obs",
+      "Map Zoom & Extent",
+      "Time density map"
     ]
   },
   "additionalProperties": false
