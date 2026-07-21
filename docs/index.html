@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LG Collared Report Workflow</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html">LG Collared Report</a>
+      <nav>
+        <a href="index.html" class="active">Overview</a>
+        <a href="user-guide.html">User Guide</a>
+        <a href="technical-guide.html">Technical Guide</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+        <a href="https://github.com/wildlife-dynamics/lg-collared-report">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>LG Collared Report Workflow</h1>
+    <p class="lede">Generates a movement analysis report for GPS-collared lions in the Amboseli ecosystem, sourced from EarthRanger.</p>
+
+    <div class="card-grid">
+      <a class="card" href="user-guide.html">
+        <h3>User Guide</h3>
+        <p>Step-by-step instructions for loading, configuring, and running the workflow.</p>
+      </a>
+      <a class="card" href="technical-guide.html">
+        <h3>Technical Guide</h3>
+        <p>Deeper look at the workflow's internals — study area layers, home range methodology, and report assembly.</p>
+      </a>
+      <a class="card" href="troubleshooting.html">
+        <h3>Troubleshooting</h3>
+        <p>Common errors you may hit while configuring or running the workflow, and how to resolve them.</p>
+      </a>
+    </div>
+
+    <h2>What it produces</h2>
+    <p>The workflow produces, for each collared subject (or group):</p>
+    <ul>
+      <li>A <strong>Home Range map</strong> (Elliptical Time Density contours at 50&ndash;99th percentiles)</li>
+      <li>A <strong>Subject Tracks map</strong> (movement corridors for the analysis period)</li>
+      <li><strong>Speed and distance summary statistics</strong> per subject</li>
+      <li>A <strong>Word document report</strong> (<code>.docx</code>) with a cover page and one section per subject</li>
+      <li>An <strong>interactive dashboard</strong> &mdash; Mean Speed, Min Speed, Max Speed, and Distance Covered (single-value widgets), plus the Home Range and Subject Tracks maps</li>
+    </ul>
+
+    <h2>Requirements</h2>
+    <ul>
+      <li>Access to an <strong>EarthRanger</strong> instance with a configured data source</li>
+      <li>The <strong>Subject Group Name</strong> of the collared lions exactly as it appears in EarthRanger</li>
+      <li>The <strong>Conservancies</strong> and <strong>Group Ranch Boundaries</strong> spatial features must exist in that EarthRanger instance &mdash; fetched live to build the study-area map layers (no local files or Dropbox boundary downloads required)</li>
+    </ul>
+
+    <h2>Get started</h2>
+    <p>New to the workflow? Start with the <a href="user-guide.html">User Guide</a> for a walkthrough of loading the template, configuring connections, and setting parameters. Running into an error? Check <a href="troubleshooting.html">Troubleshooting</a> first.</p>
+  </main>
+
+  <footer class="site-footer">
+    <p>LG Collared Report Workflow &middot; <a href="https://github.com/wildlife-dynamics/lg-collared-report">wildlife-dynamics/lg-collared-report</a> on GitHub</p>
+  </footer>
+</body>
+</html>

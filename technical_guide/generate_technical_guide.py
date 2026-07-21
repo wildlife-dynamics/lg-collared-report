@@ -126,7 +126,7 @@ def build():
         sp(8),
         hr(),
         p("Collared Lion Movement Analysis — Methodology &amp; Calculation Reference", META),
-        p(f"Version 1.0  ·  Generated {date.today().strftime('%B %d, %Y')}", META),
+        p(f"Version 1.1  ·  Generated {date.today().strftime('%B %d, %Y')}", META),
         hr(),
         PageBreak(),
     ]
@@ -165,53 +165,61 @@ def build():
         make_table(
             [
                 [c("Grouper field"),   c("EarthRanger source"),      c("Typical use")],
-                [c("subject_name"),    c("subject.name"),             c("One output per individual collared lion (default)")],
+                [c("subject_name"),    c("subject.name"),             c("One output per individual collared lion — pre-selected by default")],
                 [c("subject_sex"),     c("subject.sex"),              c("Aggregate by sex (M / F)")],
                 [c("subject_subtype"), c("subject.subject_subtype"),  c("Aggregate by subtype")],
             ],
             [3.8*cm, 4.5*cm, 8.2*cm],
         ),
 
-        sp(6), h2("2.3 Static Geodata Files"),
-        p("Two boundary datasets are downloaded from Dropbox and cached locally:"),
+        sp(6), h2("2.3 Study Area Layers (from EarthRanger)"),
+        p(
+            "Unlike some other STE workflows, the boundary layers here are <b>not</b> "
+            "downloaded from Dropbox — they are fetched live from the connected "
+            "EarthRanger instance as spatial features via <code>get_spatial_features</code> "
+            "(<code>select_geo_er</code>), then composited into a single static layer set "
+            "by <code>create_spatial_features_layer</code> (<code>spatial_features_layer</code>). "
+            "Only two feature types are queried:"
+        ),
         make_table(
             [
-                [c("Dataset"),                       c("File"),                          c("Purpose")],
-                [c("Group Ranch Boundaries"),        c("lg_group_ranch_boundaries.gpkg"), c("Community ranch polygons in Amboseli")],
-                [c("Conflict Hotspot Areas"),        c("lg_conflict_hotspots.gpkg"),      c("Known human–lion conflict hotspot features")],
+                [c("Feature type"),              c("Style"),                                      c("Grouped by")],
+                [c("Conservancies"),             c("Filled, sage green #8fbc8b, 75 % fill opacity"), c("type_name")],
+                [c("Group Ranch Boundaries"),    c("Unfilled, black outline, 1.25 px stroke width"), c("type_name")],
             ],
-            [4*cm, 5*cm, 7.5*cm],
+            [4.5*cm, 8*cm, 4*cm],
         ),
-        sp(4),
-        p(
-            "Both files use <code>overwrite_existing: false</code> (3 retries). "
-            "After loading, each is reprojected to <b>EPSG:4326</b> and annotated with "
-            "its geometry type before layer creation."
+        note(
+            "There is no separate conflict-hotspot layer in the current spec — every "
+            "subject-level map is composited against exactly these two EarthRanger-sourced "
+            "layers via <code>combine_deckgl_map_layers</code>."
         ),
 
-        sp(4), h2("2.4 Word Document Templates"),
+        sp(4), h2("2.4 Word Document Templates &amp; Logo"),
         make_table(
             [
-                [c("Template file"),                       c("Purpose")],
-                [c("collared_lions_cover_page.docx"),      c("Report cover page — subject count, time range, preparer")],
-                [c("collared_lion_subject_template.docx"), c("Per-grouper section — metrics and map images")],
+                [c("File"),                                 c("Source"),  c("Purpose")],
+                [c("collared_lions_cover_page.docx"),      c("Dropbox"), c("Report cover page template — subject count, time range, preparer")],
+                [c("collared_lion_subject_template.docx"), c("Dropbox"), c("Per-grouper section template — metrics and map images")],
+                [c("lion-guardians.png"),                  c("Dropbox"), c("Fixed organisation logo used on the cover page — not user-configurable")],
             ],
-            [6.5*cm, 10*cm],
+            [6.5*cm, 2.5*cm, 7.5*cm],
         ),
+        p("All three files use <code>overwrite_existing: false</code> with 3 retries."),
 
         sp(6), h2("2.5 Base Map Tile Layers"),
         make_table(
             [
                 [c("Layer"),                   c("Opacity"), c("Max zoom")],
-                [c("ArcGIS World Hillshade"),   c("100 %"),   c("20")],
-                [c("ArcGIS World Street Map"),  c("10 %"),    c("20")],
+                [c("ArcGIS World Hillshade"),   c("100 %"),   c("15")],
+                [c("ArcGIS World Street Map"),  c("15 %"),    c("15")],
             ],
             [10*cm, 2.5*cm, 4*cm],
         ),
         sp(4),
         p(
             "The hillshade provides full-opacity terrain context. "
-            "The street map is overlaid at 10 % to show road networks and "
+            "The street map is overlaid at 15 % to show road networks and "
             "settlement names without obscuring the hillshade or data layers."
         ),
     ]
@@ -303,22 +311,20 @@ def build():
     story += [
         sp(4), h1("4. Static Map Layers"), hr(),
         p(
-            "Three static layers are built once and composited onto every subject-level map "
-            "to provide spatial context."
+            "The two EarthRanger-sourced study area layers (Section 2.3) are built once "
+            "and composited onto every subject-level map to provide spatial context."
         ),
 
         h2("4.1 Layer Styles"),
         make_table(
             [
-                [c("Layer"),             c("Colour (RGB)"),       c("Opacity"), c("Filled"), c("Notes")],
-                [c("Group Ranch Boundaries"), c("(169, 169, 169) grey"),  c("45 %"), c("No"),
-                 c("Outline only, line width 1.25")],
-                [c("Conflict Hotspots"), c("(220, 20, 60) crimson"), c("45 %"),  c("Yes"),
-                 c("Point radius 2.05, line width 1.25")],
-                [c("Hotspot Text Labels"), c("(20, 20, 20) near-black"), c("—"),  c("—"),
-                 c("Arial, 1 000 m base, 40–75 px clamp, centroid-anchored")],
+                [c("Layer"),                  c("Colour"),                    c("Opacity"), c("Filled"), c("Notes")],
+                [c("Conservancies"),          c("#8fbc8b sage green"),        c("75 %"),    c("Yes"),
+                 c("Grouped by type_name, legend title “Map Layers”")],
+                [c("Group Ranch Boundaries"), c("#000000 black outline"),     c("0 % fill"), c("No"),
+                 c("Outline only, stroke width 1.25")],
             ],
-            [3.8*cm, 3.8*cm, 2*cm, 1.8*cm, 5.1*cm],
+            [4.5*cm, 4.5*cm, 2.2*cm, 2*cm, 3.3*cm],
         ),
     ]
 
@@ -351,10 +357,11 @@ def build():
             "Map opacity is 45 %, legend title: <i>Home Range Percentiles</i>."
         ),
         p(
-            "The map view is auto-zoomed via <code>envelope_gdf</code> + "
-            "<code>custom_view_state_from_gdf</code> (pitch 0, bearing 0, max zoom 10). "
-            "An interactive HTML is persisted (suffix: <code>homerange</code>) then "
-            "converted to PNG via <code>adjust_map_zoom_and_screenshot</code> "
+            "The map view is auto-zoomed via <code>envelope_gdf</code> "
+            "(<code>zoom_to_envelope</code>) + <code>compute_view_state_from_gdf</code> "
+            "(<code>gdf_image_extent</code>) — pitch 0, bearing 0, max zoom 15. "
+            "An interactive HTML is persisted with a filename ending in "
+            "<code>_homerange.html</code>, then converted to PNG via <code>html_to_png</code> "
             "(2× device scale factor, 40 s tile-load wait)."
         ),
 
@@ -375,7 +382,7 @@ def build():
         ),
         sp(4),
         p(
-            "The path layer is combined with the four static layers via "
+            "The path layer is combined with the two static study area layers via "
             "<code>combine_deckgl_map_layers</code>. An interactive HTML is persisted "
             "(suffix: <code>tracks</code>) and converted to PNG using the same "
             "screenshot settings as the Home Range map."
@@ -403,8 +410,8 @@ def build():
         ),
         sp(4),
         p(
-            "<code>add_totals_row</code> appends a <i>Total</i> row across all subjects. "
-            "The table is persisted as CSV."
+            "The summary DataFrame (<code>reset_index: true</code>) is persisted directly "
+            "to CSV — one row per subject, with no separate totals row appended."
         ),
 
         sp(4), h2("6.2 Scalar Widget Values"),
@@ -419,9 +426,9 @@ def build():
 
         sp(4), h2("6.3 Unique Subject Count"),
         p(
-            "<code>dataframe_column_nunique</code> counts distinct values in "
-            "<code>groupby_col</code> on the temporally-indexed trajectory GeoDataFrame. "
-            "This total is used in the cover page context."
+            "<code>dataframe_column_nunique</code> counts distinct values in the "
+            "<code>subject_name</code> column of the renamed trajectory GeoDataFrame "
+            "(prior to the per-group split). This total is used in the cover page context."
         ),
     ]
 
@@ -431,25 +438,30 @@ def build():
 
         h2("7.1 Cover Page"),
         p(
-            "<code>create_cl_ctx_cover</code> builds the cover context "
-            "(subject count, time range, <i>Ecoscope</i> as preparer). "
-            "<code>create_context_page_lg</code> renders it into "
-            "<code>lg_cover_page.docx</code>."
+            "<code>prepare_cover_metadata</code> (<code>create_cover_tpl_context</code>) "
+            "builds the cover context (subject count, time range, <i>Ecoscope</i> as "
+            "preparer, the fixed Lion Guardians logo). <code>create_context_page</code> "
+            "(<code>persist_collar_cover_page</code>) renders it into "
+            "<code>cover_page.docx</code>."
         ),
 
         sp(4), h2("7.2 Per-Grouper Sections"),
         p(
-            "<code>create_collared_lions_grouper_ctx</code> assembles a context dict "
-            "per group containing the trajectory DataFrame, total distance, Home Range "
-            "PNG, and Tracks PNG. <code>create_grouper_page</code> renders each section "
-            "from the subject template. Image boxes: <b>11.11 × 6.5 cm</b>. "
-            "<code>validate_images: true</code> catches missing PNGs before rendering."
+            "<code>ecoscope_workflows_ext_lion_guardians.tasks.reporting."
+            "create_collared_lions_context</code> (<code>build_collared_context</code>) "
+            "assembles a context dict per group containing the trajectory DataFrame, "
+            "total distance, Home Range PNG, and Tracks PNG. "
+            "<code>ecoscope_workflows_ext_lion_guardians.tasks.reporting.render_docx_page</code> "
+            "(<code>create_grouper_doc</code>) renders each section from the subject "
+            "template. Image boxes: <b>11.11 × 6.5 cm</b>. "
+            "<code>strict_images: true</code> catches missing PNGs before rendering."
         ),
 
         sp(4), h2("7.3 Document Merge"),
         p(
-            "<code>merge_cl_files</code> concatenates the cover page and all "
-            "per-grouper sections into a single Word file saved to the results directory."
+            "<code>merge_docx_documents</code> (<code>merge_collared_docs</code>) "
+            "concatenates the cover page and all per-grouper sections into a single "
+            "Word file, saved as <code>overall_report.docx</code>."
         ),
     ]
 
@@ -494,10 +506,10 @@ def build():
                 [c("<group>_tracks.html"),     c("HTML"),       c("Interactive subject tracks map")],
                 [c("<group>_homerange.png"),   c("PNG"),        c("2× screenshot of home range map")],
                 [c("<group>_tracks.png"),      c("PNG"),        c("2× screenshot of tracks map")],
-                [c("<group>_summary.csv"),     c("CSV"),        c("Speed and distance summary table with totals row")],
-                [c("lg_cover_page.docx"),      c("Word"),       c("Rendered report cover page")],
+                [c("<group>_summary.csv"),     c("CSV"),        c("Speed and distance summary table (one row per subject)")],
+                [c("cover_page.docx"),         c("Word"),       c("Rendered report cover page")],
                 [c("<group>.docx"),            c("Word"),       c("Per-grouper report section")],
-                [c("<merged_report>.docx"),    c("Word"),       c("Final combined report")],
+                [c("overall_report.docx"),     c("Word"),       c("Final combined report")],
             ],
             [5*cm, 2.5*cm, 9*cm],
         ),
@@ -529,8 +541,8 @@ def build():
             [
                 [c("Stage"),             c("Tasks")],
                 [c("Setup"),             c("EarthRanger connection, time range, groupers, base maps")],
-                [c("Geodata download"),  c("2 boundary files + 2 Word templates from Dropbox")],
-                [c("Static layers"),     c("Ranch, hotspot, hotspot text layers")],
+                [c("Template download"), c("2 Word templates + 1 logo PNG from Dropbox")],
+                [c("Static layers"),     c("Conservancies + Group Ranch Boundaries fetched live from EarthRanger")],
                 [c("Telemetry ingest"),  c("Observations → relocations → trajectories → speed bins → rename → split")],
                 [c("Home Range branch"), c("ETD → colormap → map layer → compose → view state → HTML → PNG → widget")],
                 [c("Tracks branch"),     c("Path layer → compose → draw map → HTML → PNG → widget")],
@@ -545,24 +557,32 @@ def build():
     # ── 11. Software Versions ─────────────────────────────────────────────────
     story += [
         sp(4), h1("11. Software Versions"), hr(),
+        p(
+            "As of the migration to the <b>ecoscope-platform</b> task/compiler runtime, "
+            "the workflow's requirements are:"
+        ),
         make_table(
             [
-                [c("Package"),                              c("Version"),    c("Role")],
-                [c("ecoscope-workflows-core"),              c("0.22.17.*"),  c("Core task library and workflow engine")],
-                [c("ecoscope-workflows-ext-ecoscope"),      c("0.22.17.*"),  c("Spatial analysis tasks (ETD, relocations, trajectories)")],
-                [c("ecoscope-workflows-ext-custom"),        c("0.0.40.*"),   c("Utility tasks (column mapping, rounding, screenshots)")],
-                [c("ecoscope-workflows-ext-ste"),           c("0.0.18.*"),   c("Summary table and totals-row tasks")],
-                [c("ecoscope-workflows-ext-mnc"),           c("0.0.7.*"),    c("MNC domain tasks")],
-                [c("ecoscope-workflows-ext-big-life"),      c("0.0.8.*"),    c("Big Life Foundation domain tasks")],
-                [c("ecoscope-workflows-ext-lion-guardians"),c("0.0.6.*"),    c("Lion Guardians Word report rendering tasks")],
+                [c("Package"),                               c("Version"),           c("Role")],
+                [c("ecoscope-platform"),                     c(">=2.15.0, &lt;2.16.0"), c("Core task library and workflow engine")],
+                [c("ecoscope-workflows-ext-custom"),         c("0.1.0rc14.*"),       c("Utility tasks (column mapping, rounding, screenshots)")],
+                [c("ecoscope-workflows-ext-ste"),            c("0.0.0rc1.*"),        c("Spatial-features and summary-table tasks")],
+                [c("ecoscope-workflows-ext-lion-guardians"), c("0.0.0rc1.*"),        c("Lion Guardians Word report rendering tasks")],
+                [c("pydeck"),                                c("0.9.2"),             c("Renders the interactive DeckGL maps")],
+                [c("opentelemetry-sdk"),                     c(">=1.20.0, &lt;2.0.0"), c("Workflow run telemetry/observability instrumentation")],
             ],
-            [6*cm, 2.5*cm, 8*cm],
+            [6*cm, 3.5*cm, 6.5*cm],
+        ),
+        note(
+            "ecoscope-workflows-core, ecoscope-workflows-ext-ecoscope, "
+            "ecoscope-workflows-ext-mnc, and ecoscope-workflows-ext-big-life are not "
+            "dependencies of this workflow."
         ),
         sp(4),
         p(
             "Packages are distributed via the <code>prefix.dev</code> conda channel "
-            "and pinned to patch-compatible versions (<code>.*</code> suffix). "
-            "The runtime environment is managed by <b>pixi</b>."
+            "and pinned to compatible versions. The runtime environment is managed by "
+            "<b>pixi</b>."
         ),
     ]
 

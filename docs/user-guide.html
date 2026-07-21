@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Guide — LG Collared Report Workflow</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html">LG Collared Report</a>
+      <nav>
+        <a href="index.html">Overview</a>
+        <a href="user-guide.html" class="active">User Guide</a>
+        <a href="technical-guide.html">Technical Guide</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+        <a href="https://github.com/wildlife-dynamics/lg-collared-report">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>LG Collared Report Workflow &mdash; User Guide</h1>
+    <p class="lede">This guide walks you through loading, configuring, and running the LG Collared Report Workflow, which generates a movement analysis report for GPS-collared lions in the Amboseli ecosystem sourced from EarthRanger.</p>
+
+    <h2>What it produces</h2>
+    <ul>
+      <li>A <strong>Home Range map</strong> (Elliptical Time Density contours at 50&ndash;99th percentiles)</li>
+      <li>A <strong>Subject Tracks map</strong> (movement corridors for the analysis period)</li>
+      <li><strong>Speed and distance summary statistics</strong> per subject</li>
+      <li>A <strong>Word document report</strong> (<code>.docx</code>) with a cover page and one section per subject</li>
+      <li>An <strong>interactive dashboard</strong> &mdash; Mean Speed, Min Speed, Max Speed, and Distance Covered (single-value widgets), plus the Home Range and Subject Tracks maps</li>
+    </ul>
+
+    <h2>Requirements</h2>
+    <ul>
+      <li>Access to an <strong>EarthRanger</strong> instance with a configured data source</li>
+      <li>The <strong>Subject Group Name</strong> of the collared lions exactly as it appears in EarthRanger</li>
+      <li>The <strong>Conservancies</strong> and <strong>Group Ranch Boundaries</strong> spatial features must exist in that EarthRanger instance &mdash; these are fetched live to build the study-area map layers (no local files or Dropbox boundary downloads are required)</li>
+    </ul>
+
+    <h2 id="load">1. Load the Workflow</h2>
+    <p>In the workflow runner, go to <strong>Workflow Templates</strong> and click <strong>Add Workflow Template</strong>. Paste this repository's URL into the <strong>Github Link</strong> field, then click <strong>Add Template</strong>:</p>
+    <pre><code>https://github.com/wildlife-dynamics/lg-collared-report.git</code></pre>
+    <p>Once added, it appears in the <strong>Workflow Templates</strong> list as <strong>lg-collared-report</strong>. Click it to open the workflow configuration form.</p>
+    <p>The card may show <strong>Initializing&hellip;</strong> briefly while the environment is set up.</p>
+
+    <h2 id="configure">2. Configure the Workflow</h2>
+
+    <h3 id="connection">Data Source Connection</h3>
+    <p>Navigate to <strong>Data Sources</strong> and add a new EarthRanger connection. Fill in:</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Data Source Name</td><td>A label to identify this connection</td></tr>
+        <tr><td>EarthRanger URL</td><td>Your instance URL (e.g. <code>your-site.pamdas.org</code>)</td></tr>
+        <tr><td>EarthRanger Username</td><td>Your EarthRanger username</td></tr>
+        <tr><td>EarthRanger Password</td><td>Your EarthRanger password</td></tr>
+      </tbody>
+    </table>
+    <p>Credentials are not validated at setup time. Any authentication errors will appear when the workflow runs.</p>
+
+    <h3 id="workflow-details">Workflow Details</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Workflow Name</td><td>A short name to identify this run</td></tr>
+        <tr><td>Workflow Description</td><td>Optional notes about the run (e.g. date range or subject group)</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="time-range">Time Range</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Timezone</td><td>Select the local timezone (e.g. <code>Africa/Nairobi UTC+03:00</code>)</td></tr>
+        <tr><td>Since</td><td>Start date and time of the analysis period</td></tr>
+        <tr><td>Until</td><td>End date and time of the analysis period</td></tr>
+      </tbody>
+    </table>
+    <p>All movement data, trajectories, and home ranges are computed within this window.</p>
+
+    <h3 id="basemap">Basemap Layers</h3>
+    <p>Two stacked ArcGIS tile layers form the background of every map. Pre-filled with sensible defaults, but the URL, opacity, and max zoom of each layer are editable.</p>
+    <table>
+      <thead><tr><th>Layer</th><th>Default Opacity</th><th>Max Zoom</th></tr></thead>
+      <tbody>
+        <tr><td>ESRI World Hillshade</td><td><code>1.0</code></td><td><code>15</code></td></tr>
+        <tr><td>ESRI World Street Map</td><td><code>0.15</code></td><td><code>15</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="groupers">Groupers</h3>
+    <p>Groupers control how the workflow partitions subjects for per-group outputs. <strong>Subject Name is pre-selected by default</strong> &mdash; producing one map, metrics table, and report section per individual lion. Click <strong>Add</strong> to change or add groupers:</p>
+    <table>
+      <thead><tr><th>Grouper</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td>Subject Name</td><td>One output per individual collared lion (default)</td></tr>
+        <tr><td>Subject Sex</td><td>Aggregate outputs by sex (M / F)</td></tr>
+        <tr><td>Subject Subtype</td><td>Aggregate outputs by subtype</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="er-connection">Connect to EarthRanger</h3>
+    <p>Select the EarthRanger data source configured above from the <strong>Connect to EarthRanger</strong> dropdown.</p>
+
+    <h3 id="subject-group">Subject Group</h3>
+    <p>Enter the <strong>Subject Group Name</strong> exactly as it appears in EarthRanger (case-sensitive). This is the group of collared lions to include in the report.</p>
+    <p>Using a subject group that contains mixed subtypes may produce unexpected results.</p>
+
+    <h3 id="trajectory-filter">Trajectory Filter</h3>
+    <p>Expand <strong>Advanced Configurations</strong> under <strong>Transform relocations to trajectories</strong> to set the segment filter. These parameters remove GPS noise and biologically unrealistic movements before trajectory analysis.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Minimum Segment Length (m)</td><td><code>10</code></td><td>Discard segments shorter than this distance</td></tr>
+        <tr><td>Maximum Segment Length (m)</td><td><code>10000</code></td><td>Discard segments longer than this distance</td></tr>
+        <tr><td>Minimum Segment Duration (s)</td><td><code>10</code></td><td>Discard segments shorter than this duration</td></tr>
+        <tr><td>Maximum Segment Duration (s)</td><td><code>21600</code></td><td>Discard segments longer than this duration (6 hours)</td></tr>
+        <tr><td>Minimum Segment Speed (km/h)</td><td><code>1</code></td><td>Discard segments below this average speed</td></tr>
+        <tr><td>Maximum Segment Speed (km/h)</td><td><code>30</code></td><td>Discard segments above this average speed</td></tr>
+      </tbody>
+    </table>
+    <p>Adjust these values to suit the movement characteristics of your collared lions.</p>
+
+    <h3 id="time-density">Time Density Map and Zoom to Envelope</h3>
+    <p>Expand <strong>Advanced Configurations</strong> under <strong>Time density map</strong> to control the home range computation, and configure the map zoom settings below it.</p>
+    <p><strong>Time density map</strong></p>
+    <table>
+      <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Grid Cell Size</td><td><code>Auto-scale</code></td><td>Cell size of the density raster &mdash; Auto-scale derives it from data density</td></tr>
+        <tr><td>Max Speed Factor</td><td><code>1.05</code></td><td>Estimate of the subject's maximum speed as a factor of the maximum measured speed in the dataset</td></tr>
+        <tr><td>Shape Buffer Expansion Factor</td><td><code>1.3</code></td><td>Controls how far time density values spread across the grid, affecting the smoothness of the output</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Zoom to envelope</strong></p>
+    <table>
+      <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Expansion Factor</td><td><code>1.00</code></td><td>Factor to expand the bounding box around the data extent before zooming (e.g. <code>1.2</code> = 20% larger)</td></tr>
+      </tbody>
+    </table>
+    <p>A value of <code>1.0</code> gives a tight fit to the data; increasing it adds padding around the map extent.</p>
+
+    <h2 id="run">3. Run the Workflow</h2>
+    <p>Once all parameters are configured, click <strong>Submit</strong>. The runner will:</p>
+    <ol>
+      <li>Pull movement data from EarthRanger for the specified subject group and time range.</li>
+      <li>Fetch the Conservancies and Group Ranch Boundaries spatial features from EarthRanger to build the study-area map layers.</li>
+      <li>Convert observations to relocations and build trajectory segments.</li>
+      <li>Compute Elliptical Time Density home ranges per group.</li>
+      <li>Generate the Home Range and Subject Tracks maps (interactive HTML + PNG screenshots).</li>
+      <li>Calculate speed and distance summary statistics per subject.</li>
+      <li>Render the Word report (cover page + per-subject sections) and assemble the dashboard.</li>
+      <li>Save all outputs to the directory specified by <code>ECOSCOPE_WORKFLOWS_RESULTS</code>.</li>
+    </ol>
+
+    <h3 id="output-files">Output Files</h3>
+    <p>All outputs are written to <code>$ECOSCOPE_WORKFLOWS_RESULTS/</code>:</p>
+    <table>
+      <thead><tr><th>File</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>relocations.geoparquet</code></td><td>Cleaned GPS fix locations</td></tr>
+        <tr><td><code>trajectories.geoparquet</code></td><td>Trajectory segments with speed and distance</td></tr>
+        <tr><td><code>&lt;group&gt;_homerange.html</code></td><td>Interactive ETD home range map per group</td></tr>
+        <tr><td><code>&lt;group&gt;_tracks.html</code></td><td>Interactive subject tracks map per group</td></tr>
+        <tr><td><code>&lt;group&gt;_homerange.png</code></td><td>Screenshot of the home range map (2&times; resolution)</td></tr>
+        <tr><td><code>&lt;group&gt;_tracks.png</code></td><td>Screenshot of the tracks map (2&times; resolution)</td></tr>
+        <tr><td><code>&lt;group&gt;_summary.csv</code></td><td>Speed and distance summary table (one row per subject)</td></tr>
+        <tr><td><code>cover_page.docx</code></td><td>Rendered report cover page</td></tr>
+        <tr><td><code>&lt;group&gt;.docx</code></td><td>Per-grouper report section</td></tr>
+        <tr><td><code>overall_report.docx</code></td><td>Final combined Word report</td></tr>
+      </tbody>
+    </table>
+
+    <p>Something not working as expected? See <a href="troubleshooting.html">Troubleshooting</a>. For a deeper look at the pipeline internals, see the <a href="technical-guide.html">Technical Guide</a>.</p>
+  </main>
+
+  <footer class="site-footer">
+    <p>LG Collared Report Workflow &middot; <a href="https://github.com/wildlife-dynamics/lg-collared-report">wildlife-dynamics/lg-collared-report</a> on GitHub</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technical Guide — LG Collared Report Workflow</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html">LG Collared Report</a>
+      <nav>
+        <a href="index.html">Overview</a>
+        <a href="user-guide.html">User Guide</a>
+        <a href="technical-guide.html" class="active">Technical Guide</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+        <a href="https://github.com/wildlife-dynamics/lg-collared-report">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Technical Guide</h1>
+    <p class="lede">A deeper look at how the LG Collared Report Workflow is built: the EarthRanger-sourced study area layers, home range and track methodology, summary metrics, and report assembly.</p>
+
+    <p>
+      <a href="assets/lg_collared_report_technical_guide.pdf">Download the full Technical Guide (PDF)</a>
+      <span class="badge">v1.1</span>
+    </p>
+    <p>Version 1.1 corrects extensive drift from an earlier spec revision. The most significant fix: the guide previously described a "Conflict Hotspot Areas" layer downloaded from Dropbox, alongside a Group Ranch Boundaries file — neither reflects the current spec. There is no conflict-hotspot layer at all; both study-area layers (Conservancies and Group Ranch Boundaries) are fetched live from EarthRanger spatial features, not downloaded from Dropbox. Several task/function names were also wrong throughout (cover page, per-grouper rendering, document merge, view-state, and screenshot tasks), the cover page filename was wrong (<code>cover_page.docx</code>, not <code>lg_cover_page.docx</code>), a "totals row" on the summary CSV was fabricated, and the package list is updated for the <code>ecoscope-platform</code> migration.</p>
+
+    <h2>Contents</h2>
+    <ol>
+      <li>Overview</li>
+      <li>Dependencies &amp; Prerequisites
+        <ol type="a">
+          <li>EarthRanger Connection</li>
+          <li>Groupers</li>
+          <li>Study Area Layers (from EarthRanger)</li>
+          <li>Word Document Templates &amp; Logo</li>
+          <li>Base Map Tile Layers</li>
+        </ol>
+      </li>
+      <li>Data Ingestion Pipeline
+        <ol type="a">
+          <li>Observations &rarr; Relocations</li>
+          <li>Relocations &rarr; Trajectories</li>
+          <li>Temporal Index &amp; Speed Classification</li>
+          <li>Column Renaming &amp; Group Splitting</li>
+        </ol>
+      </li>
+      <li>Static Map Layers
+        <ol type="a"><li>Layer Styles</li></ol>
+      </li>
+      <li>Map Outputs &mdash; Methodology
+        <ol type="a">
+          <li>Home Range Map (Elliptical Time Density)</li>
+          <li>Subject Tracks Map</li>
+        </ol>
+      </li>
+      <li>Summary Metrics
+        <ol type="a">
+          <li>Per-Group Summary Table</li>
+          <li>Scalar Widget Values</li>
+          <li>Unique Subject Count</li>
+        </ol>
+      </li>
+      <li>Word Report (.docx)
+        <ol type="a">
+          <li>Cover Page</li>
+          <li>Per-Grouper Sections</li>
+          <li>Document Merge</li>
+        </ol>
+      </li>
+      <li>Interactive Dashboard</li>
+      <li>Output Files</li>
+      <li>Workflow Execution Logic
+        <ol type="a">
+          <li>Skip Conditions</li>
+          <li>Data Flow Summary</li>
+        </ol>
+      </li>
+      <li>Software Versions</li>
+    </ol>
+
+    <h2>Read it here</h2>
+    <p>The guide is embedded below. If it doesn't render in your browser, use the download link above.</p>
+    <embed src="assets/lg_collared_report_technical_guide.pdf" type="application/pdf" width="100%" height="900px" style="border: 1px solid #d8e8d8; border-radius: 6px;" />
+  </main>
+
+  <footer class="site-footer">
+    <p>LG Collared Report Workflow &middot; <a href="https://github.com/wildlife-dynamics/lg-collared-report">wildlife-dynamics/lg-collared-report</a> on GitHub</p>
+  </footer>
+</body>
+</html>

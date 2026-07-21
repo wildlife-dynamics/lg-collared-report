@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Troubleshooting — LG Collared Report Workflow</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html">LG Collared Report</a>
+      <nav>
+        <a href="index.html">Overview</a>
+        <a href="user-guide.html">User Guide</a>
+        <a href="technical-guide.html">Technical Guide</a>
+        <a href="troubleshooting.html" class="active">Troubleshooting</a>
+        <a href="https://github.com/wildlife-dynamics/lg-collared-report">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Troubleshooting</h1>
+    <p class="lede">Common issues encountered while configuring, running, or contributing to the LG Collared Report Workflow, and how to resolve them. If your issue isn't listed here, open an issue on <a href="https://github.com/wildlife-dynamics/lg-collared-report/issues">GitHub</a>.</p>
+
+    <h2>Configuration &amp; Connections</h2>
+
+    <div class="error-block">
+      <p class="symptom">Subject Group returns no data</p>
+      <p>The <a href="user-guide.html#subject-group">Subject Group Name</a> field is case-sensitive and must match the name in EarthRanger exactly. Also check the group doesn't mix subtypes unexpectedly &mdash; a group containing non-lion subjects alongside collared lions may produce unexpected results.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom">EarthRanger connection fails or times out</p>
+      <p>Verify the server URL, username, and password configured in the <a href="user-guide.html#connection">Data Source Connection</a>. Confirm you can log into that same EarthRanger instance directly in a browser with the same credentials. Credentials aren't validated at setup time, so an invalid password only surfaces once the workflow actually runs.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom">Study area layers (Conservancies / Group Ranch Boundaries) are missing from the maps</p>
+      <p>Unlike some other STE workflows, these layers are <strong>not</strong> downloaded from Dropbox &mdash; they're fetched live from your connected EarthRanger instance as spatial features of type <code>Conservancies</code> and <code>Group Ranch Boundaries</code>. If your EarthRanger instance doesn't have spatial features registered under those exact names, both layers will simply be absent from every map, with no separate error.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom">Basemap tiles don't load, or the background map is blank</p>
+      <p>The <a href="user-guide.html#basemap">Basemap Layers</a> URLs are user-editable. If you changed either the ESRI World Hillshade or World Street Map layer away from its default, confirm the new tile URL follows the standard <code>{z}/{y}/{x}</code> template and is reachable from the machine running the workflow.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom">Report has one section total instead of one per lion (or vice versa)</p>
+      <p>Check the <a href="user-guide.html#groupers">Groupers</a> selection &mdash; <strong>Subject Name is pre-selected by default</strong>, which produces one map/metrics/report section per individual lion. If you want aggregated output instead, change the grouper to Subject Sex or Subject Subtype, or remove it to combine everything into a single view.</p>
+    </div>
+
+    <h2>Trajectories &amp; Map Outputs</h2>
+
+    <div class="error-block">
+      <p class="symptom">Home Range or Subject Tracks maps are empty or sparse for a subject</p>
+      <p>This is usually the <a href="user-guide.html#trajectory-filter">Trajectory Filter</a> discarding most of the subject's data. If a lion moves unusually slowly or quickly relative to the default 1&ndash;30 km/h bounds, or has irregular fix intervals relative to the 10 s&ndash;6 h duration bounds, loosen the thresholds to match its actual movement characteristics, then re-run.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom">Home Range map looks unusually smoothed or noisy</p>
+      <p>Adjust the <a href="user-guide.html#time-density">Time Density Map</a> settings &mdash; <strong>Shape Buffer Expansion Factor</strong> (default 1.3) controls how far density values spread across the grid; lower it for a tighter, less-smoothed home range, or raise it for smoother contours. <strong>Max Speed Factor</strong> (default 1.05) bounds the kernel spread relative to the fastest measured segment.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom">Map is zoomed too tight or too loose around the data</p>
+      <p>Adjust the <strong>Zoom to Envelope Expansion Factor</strong> under <a href="user-guide.html#time-density">Time Density Map and Zoom to Envelope</a> &mdash; <code>1.0</code> is a tight fit to the data extent; increase it (e.g. <code>1.2</code>) to add padding around the map.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom">No outputs written / can't find results</p>
+      <p>All outputs are written to the directory specified by the <code>ECOSCOPE_WORKFLOWS_RESULTS</code> environment variable. Confirm it's set and points to a directory the workflow process can write to.</p>
+    </div>
+
+    <h2>Contributing &amp; CI</h2>
+    <p>These apply if you're modifying the workflow itself (<code>spec.yaml</code>, <code>test-cases.yaml</code>, or the generated <code>ecoscope-workflows-collared-report-workflow/</code> directory) and opening a pull request.</p>
+
+    <div class="error-block">
+      <p class="symptom"><code>Generated files differ from committed files in ecoscope-workflows-collared-report-workflow</code></p>
+      <p>The generated workflow directory is out of sync with <code>spec.yaml</code>. Run the recompile script locally and commit the result:</p>
+      <pre><code>pixi run --manifest-path pixi.toml --locked bash -c "./dev/recompile.sh --update"</code></pre>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom"><code>Found wildcard version (*) in requirements</code> or <code>Found local file channel (file://) in requirements</code></p>
+      <p>In <code>spec.yaml</code>, every dependency under <code>requirements</code> must pin an exact version and use a remote conda channel &mdash; wildcard versions and local <code>file://</code> channels are only valid for local development, not for CI using published packages.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom"><code>VERSION.yaml (...) must be greater than main branch (...)</code></p>
+      <p>Bump <code>MAJ</code>/<code>MIN</code>/<code>PATCH</code> in <code>ecoscope-workflows-collared-report-workflow/VERSION.yaml</code> so it's strictly greater than the version on <code>main</code> before opening or updating a PR.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom"><code>test-cases.yaml must contain at least one test case</code></p>
+      <p>Every workflow requires at least one top-level entry in <code>test-cases.yaml</code> with a <code>params</code> block. See the existing entries in that file for the expected format.</p>
+    </div>
+
+    <div class="error-block">
+      <p class="symptom">Workflow tests fail in CI but pass locally (or vice versa)</p>
+      <p><code>test.yml</code> runs test cases against all of <code>ubuntu-latest</code>, <code>macos-latest</code>, and <code>windows-latest</code>. If a test only fails on CI, check whether it depends on EarthRanger credentials being available as secrets, on the Conservancies/Group Ranch Boundaries spatial features existing on the test EarthRanger instance, or on OS-specific path handling.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>LG Collared Report Workflow &middot; <a href="https://github.com/wildlife-dynamics/lg-collared-report">wildlife-dynamics/lg-collared-report</a> on GitHub</p>
+  </footer>
+</body>
+</html>

@@ -1,84 +1,62 @@
-# LG Collared Report Workflow — User Guide
+# LG Collared Report Workflow
 
-This guide walks you through configuring and running the LG Collared Report Workflow, which generates a movement analysis report for GPS-collared lions in the Amboseli ecosystem sourced from EarthRanger.
+Generates a movement analysis report for GPS-collared lions in the Amboseli ecosystem, sourced from EarthRanger.
 
----
-
-## Overview
+## What it produces
 
 The workflow produces, for each collared subject (or group):
 
-- A **Home Range map** (Elliptical Time Density contours at 50–99th percentiles)
+- A **Home Range map** (Elliptical Time Density contours at 50&ndash;99th percentiles)
 - A **Subject Tracks map** (movement corridors for the analysis period)
 - **Speed and distance summary statistics** per subject
 - A **Word document report** (`.docx`) with a cover page and one section per subject
-- An **interactive widget dashboard**
+- An **interactive dashboard** &mdash; Mean Speed, Min Speed, Max Speed, and Distance Covered (single-value widgets), plus the Home Range and Subject Tracks maps
 
----
-
-## Prerequisites
-
-Before running the workflow, ensure you have:
+## Requirements
 
 - Access to an **EarthRanger** instance with a configured data source
 - The **Subject Group Name** of the collared lions exactly as it appears in EarthRanger
-
-> The two spatial boundary files (group ranch boundaries and conflict hotspot areas) are downloaded automatically from Dropbox — no local copies are required.
-
----
-
-## Step-by-Step Configuration
-
-### Step 1 — Add an EarthRanger Connection
-
-Navigate to **Data Sources** and add a new EarthRanger connection. Fill in:
-
-- **Data Source Name** — a label to identify this connection
-- **EarthRanger URL** — your instance URL (e.g. `your-site.pamdas.org`)
-- **EarthRanger Username** and **EarthRanger Password**
-
-> Credentials are not validated at setup time. Any authentication errors will appear when the workflow runs.
-
-![EarthRanger Connection](data/screenshots/er_connection.png)
+- The **Conservancies** and **Group Ranch Boundaries** spatial features must exist in that EarthRanger instance &mdash; these are fetched live to build the study-area map layers (no local files or Dropbox boundary downloads are required)
 
 ---
 
-### Step 2 — Add the Workflow Template
+## 1. Load the Workflow
 
-In the workflow runner, go to **Workflow Templates** and click **Add Workflow Template**. Paste the GitHub repository URL into the **Github Link** field:
+In the workflow runner, go to **Workflow Templates** and click **Add Workflow Template**. Paste this repository's URL into the **Github Link** field, then click **Add Template**:
 
 ```
 https://github.com/wildlife-dynamics/lg-collared-report.git
 ```
 
-Then click **Add Template**.
-
-![Add Workflow Template](data/screenshots/add_workflow.png)
-
----
-
-### Step 3 — Select the Workflow
-
-After the template is added, it appears in the **Workflow Templates** list as **lg-collared-report**. Click it to open the workflow configuration form.
+Once added, it appears in the **Workflow Templates** list as **lg-collared-report**. Click it to open the workflow configuration form.
 
 > The card may show **Initializing…** briefly while the environment is set up.
 
-![Select Workflow Template](data/screenshots/select_workflow.png)
-
 ---
 
-### Step 4 — Configure Workflow Details and Time Range
+## 2. Configure the Workflow
 
-The configuration form opens with two sections at the top.
+### Data Source Connection
 
-**Set Workflow Details**
+Navigate to **Data Sources** and add a new EarthRanger connection. Fill in:
+
+| Field | Description |
+|-------|-------------|
+| Data Source Name | A label to identify this connection |
+| EarthRanger URL | Your instance URL (e.g. `your-site.pamdas.org`) |
+| EarthRanger Username | Your EarthRanger username |
+| EarthRanger Password | Your EarthRanger password |
+
+> Credentials are not validated at setup time. Any authentication errors will appear when the workflow runs.
+
+### Workflow Details
 
 | Field | Description |
 |-------|-------------|
 | Workflow Name | A short name to identify this run |
 | Workflow Description | Optional notes about the run (e.g. date range or subject group) |
 
-**Define time range**
+### Time Range
 
 | Field | Description |
 |-------|-------------|
@@ -88,39 +66,36 @@ The configuration form opens with two sections at the top.
 
 All movement data, trajectories, and home ranges are computed within this window.
 
-![Configure Workflow Details and Time Range](data/screenshots/configure_workflow_time.png)
+### Basemap Layers
 
----
+Two stacked ArcGIS tile layers form the background of every map. Pre-filled with sensible defaults, but the URL, opacity, and max zoom of each layer are editable.
 
-### Step 5 — Set Groupers, Connect to EarthRanger, and Subject Group
+| Layer | Default Opacity | Max Zoom |
+|-------|------------------|----------|
+| ESRI World Hillshade | `1.0` | `15` |
+| ESRI World Street Map | `0.15` | `15` |
 
-Scroll down to configure three sections.
+### Groupers
 
-**Set Groupers** *(optional)*
-
-Groupers control how the workflow partitions subjects for per-group outputs. If left blank, all data appears in a single view. Click **Add** to add a grouper. Available options:
+Groupers control how the workflow partitions subjects for per-group outputs. **Subject Name is pre-selected by default** &mdash; producing one map, metrics table, and report section per individual lion. Click **Add** to change or add groupers:
 
 | Grouper | Effect |
 |---------|--------|
-| Subject Name | One map, metrics, and report section per individual lion |
+| Subject Name | One output per individual collared lion (default) |
 | Subject Sex | Aggregate outputs by sex (M / F) |
 | Subject Subtype | Aggregate outputs by subtype |
 
-**Connect to EarthRanger**
+### Connect to EarthRanger
 
-Select the EarthRanger data source configured in Step 1 from the **Connect to EarthRanger** dropdown.
+Select the EarthRanger data source configured above from the **Connect to EarthRanger** dropdown.
 
-**Get Subject Group observations from EarthRanger**
+### Subject Group
 
 Enter the **Subject Group Name** exactly as it appears in EarthRanger (case-sensitive). This is the group of collared lions to include in the report.
 
 > Using a subject group that contains mixed subtypes may produce unexpected results.
 
-![Set Groupers, Data Source, and Subject Group](data/screenshots/set_groupers_data_subject_group.png)
-
----
-
-### Step 6 — Set the Trajectory Filter
+### Trajectory Filter
 
 Expand **Advanced Configurations** under **Transform relocations to trajectories** to set the segment filter. These parameters remove GPS noise and biologically unrealistic movements before trajectory analysis.
 
@@ -135,11 +110,7 @@ Expand **Advanced Configurations** under **Transform relocations to trajectories
 
 Adjust these values to suit the movement characteristics of your collared lions.
 
-![Set Trajectory Filter](data/screenshots/set_trajectory_filter.png)
-
----
-
-### Step 7 — Configure Time Density Map and Zoom to Envelope
+### Time Density Map and Zoom to Envelope
 
 Expand **Advanced Configurations** under **Time density map** to control the home range computation, and configure the map zoom settings below it.
 
@@ -147,7 +118,7 @@ Expand **Advanced Configurations** under **Time density map** to control the hom
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Grid Cell Size | `Auto-scale` | Cell size of the density raster — Auto-scale derives it from data density |
+| Grid Cell Size | `Auto-scale` | Cell size of the density raster &mdash; Auto-scale derives it from data density |
 | Max Speed Factor | `1.05` | Estimate of the subject's maximum speed as a factor of the maximum measured speed in the dataset |
 | Shape Buffer Expansion Factor | `1.3` | Controls how far time density values spread across the grid, affecting the smoothness of the output |
 
@@ -159,16 +130,14 @@ Expand **Advanced Configurations** under **Time density map** to control the hom
 
 A value of `1.0` gives a tight fit to the data; increasing it adds padding around the map extent.
 
-![Time Density Map and Zoom to Envelope](data/screenshots/time_density_zoom.png)
-
 ---
 
-## Running the Workflow
+## 3. Run the Workflow
 
 Once all parameters are configured, click **Submit**. The runner will:
 
 1. Pull movement data from EarthRanger for the specified subject group and time range.
-2. Download the static boundary files (group ranches, conflict hotspots).
+2. Fetch the Conservancies and Group Ranch Boundaries spatial features from EarthRanger to build the study-area map layers.
 3. Convert observations to relocations and build trajectory segments.
 4. Compute Elliptical Time Density home ranges per group.
 5. Generate the Home Range and Subject Tracks maps (interactive HTML + PNG screenshots).
@@ -176,9 +145,7 @@ Once all parameters are configured, click **Submit**. The runner will:
 7. Render the Word report (cover page + per-subject sections) and assemble the dashboard.
 8. Save all outputs to the directory specified by `ECOSCOPE_WORKFLOWS_RESULTS`.
 
----
-
-## Output Files
+### Output Files
 
 All outputs are written to `$ECOSCOPE_WORKFLOWS_RESULTS/`:
 
@@ -188,9 +155,28 @@ All outputs are written to `$ECOSCOPE_WORKFLOWS_RESULTS/`:
 | `trajectories.geoparquet` | Trajectory segments with speed and distance |
 | `<group>_homerange.html` | Interactive ETD home range map per group |
 | `<group>_tracks.html` | Interactive subject tracks map per group |
-| `<group>_homerange.png` | Screenshot of the home range map (2× resolution) |
-| `<group>_tracks.png` | Screenshot of the tracks map (2× resolution) |
-| `<group>_summary.csv` | Speed and distance summary table with totals row |
-| `lg_cover_page.docx` | Rendered report cover page |
+| `<group>_homerange.png` | Screenshot of the home range map (2&times; resolution) |
+| `<group>_tracks.png` | Screenshot of the tracks map (2&times; resolution) |
+| `<group>_summary.csv` | Speed and distance summary table (one row per subject) |
+| `cover_page.docx` | Rendered report cover page |
 | `<group>.docx` | Per-grouper report section |
-| Merged report `.docx` | Final combined Word report |
+| `overall_report.docx` | Final combined Word report |
+
+---
+
+## More Help
+
+- **Technical Guide:** [technical_guide/lg_collared_report_technical_guide.pdf](technical_guide/lg_collared_report_technical_guide.pdf) &mdash; pipeline internals and task-by-task reference
+- **Issues:** [github.com/wildlife-dynamics/lg-collared-report/issues](https://github.com/wildlife-dynamics/lg-collared-report/issues)
+
+## Development
+
+This workflow's code (`ecoscope-workflows-collared-report-workflow/`) is generated from [`spec.yaml`](spec.yaml) and [`test-cases.yaml`](test-cases.yaml). After editing either file, recompile and commit the generated changes:
+
+```
+pixi run --manifest-path pixi.toml --locked bash -c "./dev/recompile.sh --update"
+```
+
+## License
+
+[BSD 3-Clause](LICENSE)
