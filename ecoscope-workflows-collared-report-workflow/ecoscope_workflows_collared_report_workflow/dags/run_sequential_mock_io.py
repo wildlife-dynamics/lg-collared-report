@@ -11,6 +11,7 @@ import os
 import warnings  # 🧪
 from typing import Any
 
+from ecoscope.platform.tasks.config import set_string_var as set_string_var
 from ecoscope.platform.tasks.config import set_workflow_details as set_workflow_details
 from ecoscope.platform.tasks.filter import (
     get_timezone_from_time_range as get_timezone_from_time_range,
@@ -375,6 +376,23 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .call()
     )
 
+    subject_group_var = (
+        task(set_string_var)
+        .validate()
+        .set_task_instance_id("subject_group_var")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(**(params.get("subject_group_var") or {}))
+        .call()
+    )
+
     subject_obs = (
         task(get_subjectgroup_observations)
         # 🧪 validation omitted for mocked IO task (returns pre-loaded example data)
@@ -391,6 +409,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .partial(
             client=er_client_name,
             time_range=time_range,
+            subject_group_name=subject_group_var,
             raise_on_empty=False,
             include_details=False,
             include_subjectsource_details=False,

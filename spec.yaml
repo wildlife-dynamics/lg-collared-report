@@ -44,12 +44,12 @@ task-instance-defaults:
       
 workflow:
   #Set workflow details
-  - name: Set Workflow Details
+  - name: Workflow Details
     id: workflow_details
     task: set_workflow_details
 
   #Enter time range 
-  - name: Define Time Range
+  - name: Time Range
     id: time_range
     task: set_time_range
 
@@ -116,13 +116,6 @@ workflow:
           group_by: "type_name"
           legend_title: ""
 
-        # - query:
-        #     featureset_name: "Boundaries"
-        #   style: []
-        #   group_by: "type_name"
-        #   legend_title: "Boundaries"
-
-
   - name: Build Study Area Map Layer
     id: spatial_features_layer
     task: ecoscope_workflows_ext_ste.tasks.results.create_spatial_features_layer
@@ -149,6 +142,14 @@ workflow:
       retries: 3
       unzip: false
 
+  - title: Subject Group
+    type: task-group
+    description: Choose subject group to generate collar voltage charts and overall speedmap
+    tasks:
+      - name: Set subject group name
+        id: subject_group_var
+        task: set_string_var
+
   #Get subject group observations
   - name: Get Subject Group observations from EarthRanger
     id: subject_obs
@@ -156,6 +157,7 @@ workflow:
     partial:
       client: ${{ workflow.er_client_name.return }}
       time_range: ${{ workflow.time_range.return }}
+      subject_group_name: ${{ workflow.subject_group_var.return }}
       raise_on_empty: false
       include_details: false
       include_subjectsource_details: false
@@ -336,7 +338,7 @@ workflow:
 
 
   # Calculate Time Density
-  - title: Time density map
+  - title: Elliptical Time Density
     type: task-group
     description: These settings show a grid-based heatmap showing where subjects spent the most time.
     tasks:

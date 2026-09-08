@@ -18,7 +18,7 @@
       ],
       "type": "object",
       "description": "Add information that will help to differentiate this workflow from another.",
-      "title": "Set Workflow Details"
+      "title": "Workflow Details"
     },
     "time_range": {
       "additionalProperties": false,
@@ -58,7 +58,7 @@
       ],
       "type": "object",
       "description": "Choose the period of time to analyze.",
-      "title": "Define Time Range"
+      "title": "Time Range"
     },
     "er_client_name": {
       "additionalProperties": false,
@@ -75,20 +75,19 @@
       "type": "object",
       "title": "Connect to EarthRanger"
     },
-    "subject_obs": {
+    "subject_group_var": {
       "additionalProperties": false,
       "properties": {
-        "subject_group_name": {
-          "title": "Subject Group Name",
-          "type": "string",
-          "description": "\u26a0\ufe0f The use of a group with mixed subtypes could lead to unexpected results"
+        "var": {
+          "title": "",
+          "type": "string"
         }
       },
       "required": [
-        "subject_group_name"
+        "var"
       ],
       "type": "object",
-      "title": "Get Subject Group observations from EarthRanger"
+      "title": "Set subject group name"
     },
     "zoom_to_envelope": {
       "additionalProperties": false,
@@ -254,7 +253,7 @@
       "workflow_details",
       "time_range",
       "er_client_name",
-      "subject_obs",
+      "subject_group_var",
       "zoom_to_envelope",
       "td"
     ]

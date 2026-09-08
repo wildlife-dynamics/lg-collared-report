@@ -18,7 +18,7 @@
       ],
       "type": "object",
       "description": "Add information that will help to differentiate this workflow from another.",
-      "title": "Set Workflow Details"
+      "title": "Workflow Details"
     },
     "time_range": {
       "additionalProperties": false,
@@ -58,7 +58,7 @@
       ],
       "type": "object",
       "description": "Choose the period of time to analyze.",
-      "title": "Define Time Range"
+      "title": "Time Range"
     },
     "er_client_name": {
       "additionalProperties": false,
@@ -75,20 +75,26 @@
       "type": "object",
       "title": "Connect to EarthRanger"
     },
-    "subject_obs": {
-      "additionalProperties": false,
-      "properties": {
-        "subject_group_name": {
-          "title": "Subject Group Name",
-          "type": "string",
-          "description": "\u26a0\ufe0f The use of a group with mixed subtypes could lead to unexpected results"
-        }
-      },
-      "required": [
-        "subject_group_name"
-      ],
+    "Subject Group": {
       "type": "object",
-      "title": "Get Subject Group observations from EarthRanger"
+      "description": "Choose subject group to generate collar voltage charts and overall speedmap",
+      "ecoscope:task_group": true,
+      "properties": {
+        "subject_group_var": {
+          "additionalProperties": false,
+          "properties": {
+            "var": {
+              "title": "",
+              "type": "string"
+            }
+          },
+          "required": [
+            "var"
+          ],
+          "type": "object",
+          "title": "Set subject group name"
+        }
+      }
     },
     "Map Zoom & Extent": {
       "type": "object",
@@ -112,7 +118,7 @@
         }
       }
     },
-    "Time density map": {
+    "Elliptical Time Density": {
       "type": "object",
       "description": "These settings show a grid-based heatmap showing where subjects spent the most time.",
       "ecoscope:task_group": true,
@@ -277,7 +283,7 @@
         "time_format"
       ]
     },
-    "Time density map": {
+    "Elliptical Time Density": {
       "td": {
         "ui:order": [
           "auto_scale_or_custom_cell_size",
@@ -290,9 +296,9 @@
       "workflow_details",
       "time_range",
       "er_client_name",
-      "subject_obs",
+      "Subject Group",
       "Map Zoom & Extent",
-      "Time density map"
+      "Elliptical Time Density"
     ]
   },
   "additionalProperties": false
