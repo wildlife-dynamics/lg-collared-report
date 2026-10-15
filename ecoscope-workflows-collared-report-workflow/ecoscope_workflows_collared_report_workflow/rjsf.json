@@ -84,8 +84,18 @@
           "additionalProperties": false,
           "properties": {
             "var": {
-              "title": "",
-              "type": "string"
+              "title": "Subject Group Name",
+              "type": "string",
+              "description": "The EarthRanger subject group to report on, picked from the chosen data source's subject groups.",
+              "ecoscope:transform": [
+                {
+                  "transformer": "EarthRangerEnumResolver",
+                  "transformer_kws": {
+                    "type": "subject_group_name",
+                    "depends_on": "properties.er_client_name.properties.data_source.properties.name"
+                  }
+                }
+              ]
             }
           },
           "required": [

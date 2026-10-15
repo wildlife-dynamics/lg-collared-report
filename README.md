@@ -15,7 +15,7 @@ The workflow produces, for each collared subject (or group):
 ## Requirements
 
 - Access to an **EarthRanger** instance with a configured data source
-- The **Subject Group Name** of the collared lions exactly as it appears in EarthRanger
+- A **subject group** of the collared lions in EarthRanger (picked from a drop-down on the form)
 - The **Conservancies** and **Group Ranch Boundaries** spatial features must exist in that EarthRanger instance &mdash; these are fetched live to build the study-area map layers (no local files or Dropbox boundary downloads are required)
 
 ---
@@ -91,7 +91,7 @@ Select the EarthRanger data source configured above from the **Connect to EarthR
 
 ### Subject Group
 
-Enter the **Subject Group Name** exactly as it appears in EarthRanger (case-sensitive). This is the group of collared lions to include in the report.
+Pick the **Subject Group Name** from the drop-down, which lists the subject groups on the data source chosen under **Connect to EarthRanger** (choose that first). This is the group of collared lions to include in the report.
 
 > Using a subject group that contains mixed subtypes may produce unexpected results.
 

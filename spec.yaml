@@ -25,6 +25,18 @@ requirements:
     channel: conda-forge
 
 rjsf-overrides:
+  properties:
+    # Subject Group: a drop-down of the chosen EarthRanger site's subject group names
+    Subject Group.properties.subject_group_var.properties.var:
+      title: Subject Group Name
+      type: string
+      description: The EarthRanger subject group to report on, picked from the chosen data source's subject groups.
+      ecoscope:transform:
+      - transformer: EarthRangerEnumResolver
+        transformer_kws:
+          type: subject_group_name
+          depends_on: properties.er_client_name.properties.data_source.properties.name
+
   $defs:
     ValueGrouper.properties.index_name.oneOf:
       - const: subject_name
