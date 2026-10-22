@@ -1,19 +1,19 @@
 id: collared_report
 requirements:
   - name: ecoscope-platform
-    version: ">=2.15.0, <2.16.0"
+    version: ">=2.25.1,<3.0.0"
     channel: https://repo.prefix.dev/ecoscope-workflows/
 
   - name: ecoscope-workflows-ext-custom
-    version: "0.1.0rc14.*"
+    version: "0.1.4.*"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 
   - name: ecoscope-workflows-ext-ste
-    version: "0.0.0rc1.*"
+    version: "0.0.24.*"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 
   - name: ecoscope-workflows-ext-lion-guardians
-    version: "0.0.0rc1.*"
+    version: "0.0.8.*"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
     
   - name: pydeck
@@ -87,7 +87,7 @@ workflow:
   # Set base maps
   - name: Base Maps
     id: base_map_defs
-    task: set_base_maps_pydeck
+    task: set_base_maps
     partial: 
       base_maps:
         - url: >-
@@ -174,6 +174,7 @@ workflow:
       include_details: false
       include_subjectsource_details: false
       filter: clean
+      include_subject_additional: false
   
   - name: Convert relocs to timezone
     id: convert_relocs_timezone
@@ -275,6 +276,7 @@ workflow:
         extra__name: subject_name
         extra__sex: subject_sex
         extra__subject_subtype: subject_subtype
+      duplicate_strategy: suffix
 
       df: ${{ workflow.classify_trajectories_speed_bins.return }}
 
@@ -389,9 +391,12 @@ workflow:
       # create polygon layer
       - name: Create map layer from time density
         id: td_map_layer
-        task: ecoscope_workflows_ext_custom.tasks.results.create_geojson_layer
+        task: create_geojson_layer
         partial:
           data_url: null 
+          tooltip_columns:
+            - percentile
+            - percentile_colormap
           layer_style:
             filled: true 
             stroked: true 
@@ -443,7 +448,7 @@ workflow:
 
       - name: Draw ecomap from time density
         id: td_ecomap
-        task: ecoscope_workflows_ext_custom.tasks.results.draw_map
+        task: draw_map
         partial:
           tile_layers: ${{ workflow.base_map_defs.return }}
           static: false
@@ -452,6 +457,7 @@ workflow:
           legend_style:
             placement: "bottom-right"
             title: "ETD Metrics"
+          output_type: html
         mapvalues:
           argnames:
             - geo_layers
@@ -567,9 +573,14 @@ workflow:
   # Subject tracks
   - name: Generate track layers 
     id: generate_track_layers 
-    task: ecoscope_workflows_ext_custom.tasks.results.create_path_layer
+    task: create_path_layer
     partial: 
       data_url: null
+      tooltip_columns:
+        - subject_name
+        - subject_sex
+        - subject_subtype
+        - speed_kmhr
       layer_style:
         get_color: [30, 144, 255]
         get_width: 1.25
@@ -616,7 +627,7 @@ workflow:
 
   - name: Draw track map
     id: draw_track_map
-    task: ecoscope_workflows_ext_custom.tasks.results.draw_map
+    task: draw_map
     partial:
       tile_layers: ${{ workflow.base_map_defs.return }}
       static: false
@@ -624,6 +635,7 @@ workflow:
       max_zoom: 15
       legend_style:
         placement: "bottom-right"
+      output_type: html
     mapvalues:
       argnames:
         - geo_layers

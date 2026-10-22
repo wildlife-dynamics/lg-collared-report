@@ -19,21 +19,19 @@ from ecoscope.platform.tasks.filter import (
 from ecoscope.platform.tasks.filter import set_time_range as set_time_range
 from ecoscope.platform.tasks.groupby import set_groupers as set_groupers
 from ecoscope.platform.tasks.io import set_er_connection as set_er_connection
+from ecoscope.platform.tasks.results import set_base_maps as set_base_maps
 from ecoscope.platform.tasks.skip import (
     any_dependency_skipped as any_dependency_skipped,
 )
 from ecoscope.platform.tasks.skip import any_is_empty_df as any_is_empty_df
-from ecoscope_workflows_ext_custom.tasks.results import (
-    set_base_maps_pydeck as set_base_maps_pydeck,
-)
 from ecoscope_workflows_ext_ste.tasks.io import (
     fetch_and_persist_file as fetch_and_persist_file,
 )
 from ecoscope_workflows_ext_ste.tasks.results import (
-    create_spatial_features_layer as create_spatial_features_layer,
+    create_spatial_features_layer as create_spatial_features_layer_1,
 )
 from ecoscope_workflows_ext_ste.tasks.spatial_operations import (
-    get_spatial_features as get_spatial_features,
+    get_spatial_features as get_spatial_features_1,
 )
 from wt_contracts import validate as _validate
 from wt_task import task
@@ -66,12 +64,15 @@ from ecoscope.platform.tasks.preprocessing import (
 from ecoscope.platform.tasks.preprocessing import (
     relocations_to_trajectory as relocations_to_trajectory,
 )
+from ecoscope.platform.tasks.results import create_geojson_layer as create_geojson_layer
 from ecoscope.platform.tasks.results import (
     create_map_widget_single_view as create_map_widget_single_view,
 )
+from ecoscope.platform.tasks.results import create_path_layer as create_path_layer
 from ecoscope.platform.tasks.results import (
     create_single_value_widget_single_view as create_single_value_widget_single_view,
 )
+from ecoscope.platform.tasks.results import draw_map as draw_map
 from ecoscope.platform.tasks.results import gather_dashboard as gather_dashboard
 from ecoscope.platform.tasks.results import merge_widget_views as merge_widget_views
 from ecoscope.platform.tasks.skip import (
@@ -90,13 +91,6 @@ from ecoscope.platform.tasks.transformation import (
 )
 from ecoscope.platform.tasks.transformation import map_columns as map_columns
 from ecoscope_workflows_ext_custom.tasks.io import html_to_png as html_to_png
-from ecoscope_workflows_ext_custom.tasks.results import (
-    create_geojson_layer as create_geojson_layer_1,
-)
-from ecoscope_workflows_ext_custom.tasks.results import (
-    create_path_layer as create_path_layer_1,
-)
-from ecoscope_workflows_ext_custom.tasks.results import draw_map as draw_map_1
 from ecoscope_workflows_ext_lion_guardians.tasks.reporting import (
     create_collared_lions_context as create_collared_lions_context,
 )
@@ -224,7 +218,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
     )
 
     base_map_defs = (
-        task(set_base_maps_pydeck)
+        task(set_base_maps)
         .validate()
         .set_task_instance_id("base_map_defs")
         .handle_errors()
@@ -255,7 +249,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
     )
 
     select_geo_er = (
-        task(get_spatial_features)
+        task(get_spatial_features_1)
         .validate()
         .set_task_instance_id("select_geo_er")
         .handle_errors()
@@ -310,7 +304,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
     )
 
     spatial_features_layer = (
-        task(create_spatial_features_layer)
+        task(create_spatial_features_layer_1)
         .validate()
         .set_task_instance_id("spatial_features_layer")
         .handle_errors()
@@ -414,6 +408,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             include_details=False,
             include_subjectsource_details=False,
             filter="clean",
+            include_subject_additional=False,
             **(params.get("subject_obs") or {}),
         )
         .call()
@@ -619,6 +614,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
                 "extra__sex": "subject_sex",
                 "extra__subject_subtype": "subject_subtype",
             },
+            duplicate_strategy="suffix",
             df=classify_trajectories_speed_bins,
             **(params.get("rename_traj_cols") or {}),
         )
@@ -798,7 +794,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
     )
 
     td_map_layer = (
-        task(create_geojson_layer_1)
+        task(create_geojson_layer)
         .validate()
         .set_task_instance_id("td_map_layer")
         .handle_errors()
@@ -812,6 +808,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         )
         .partial(
             data_url=None,
+            tooltip_columns=["percentile", "percentile_colormap"],
             layer_style={
                 "filled": True,
                 "stroked": True,
@@ -881,7 +878,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
     )
 
     td_ecomap = (
-        task(draw_map_1)
+        task(draw_map)
         .validate()
         .set_task_instance_id("td_ecomap")
         .handle_errors()
@@ -899,6 +896,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             title=None,
             max_zoom=15,
             legend_style={"placement": "bottom-right", "title": "ETD Metrics"},
+            output_type="html",
             **(params.get("td_ecomap") or {}),
         )
         .mapvalues(
@@ -1075,7 +1073,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
     )
 
     generate_track_layers = (
-        task(create_path_layer_1)
+        task(create_path_layer)
         .validate()
         .set_task_instance_id("generate_track_layers")
         .handle_errors()
@@ -1089,6 +1087,12 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         )
         .partial(
             data_url=None,
+            tooltip_columns=[
+                "subject_name",
+                "subject_sex",
+                "subject_subtype",
+                "speed_kmhr",
+            ],
             layer_style={
                 "get_color": [30, 144, 255],
                 "get_width": 1.25,
@@ -1152,7 +1156,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
     )
 
     draw_track_map = (
-        task(draw_map_1)
+        task(draw_map)
         .validate()
         .set_task_instance_id("draw_track_map")
         .handle_errors()
@@ -1170,6 +1174,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             title=None,
             max_zoom=15,
             legend_style={"placement": "bottom-right"},
+            output_type="html",
             **(params.get("draw_track_map") or {}),
         )
         .mapvalues(
