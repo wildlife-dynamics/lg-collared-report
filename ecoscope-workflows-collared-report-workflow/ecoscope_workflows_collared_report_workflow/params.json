@@ -24,32 +24,21 @@
       "additionalProperties": false,
       "properties": {
         "since": {
+          "description": "The start time",
           "format": "date-time",
           "title": "Since",
-          "type": "string",
-          "description": "The start time"
+          "type": "string"
         },
         "until": {
+          "description": "The end time",
           "format": "date-time",
           "title": "Until",
-          "type": "string",
-          "description": "The end time"
+          "type": "string"
         },
         "timezone": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/TimezoneInfo"
-            }
-          ],
+          "$ref": "#/$defs/TimezoneInfo",
           "default": null,
           "title": "Timezone"
-        },
-        "time_format": {
-          "default": "%d %b %Y %H:%M:%S",
-          "title": "Time Format",
-          "type": "string",
-          "description": "The time format",
-          "ecoscope:advanced": true
         }
       },
       "required": [
@@ -65,8 +54,8 @@
       "properties": {
         "data_source": {
           "$ref": "#/$defs/EarthRangerConnection",
-          "title": "",
-          "description": "Select one of your configured data sources."
+          "description": "Select one of your configured data sources.",
+          "title": ""
         }
       },
       "required": [
@@ -94,10 +83,10 @@
       "properties": {
         "expansion_factor": {
           "default": 1.5,
-          "title": "Expansion Factor",
-          "type": "number",
           "description": "Factor to expand the bounding box (e.g., 1.2 = 20% larger)",
-          "ecoscope:advanced": true
+          "ecoscope:advanced": true,
+          "title": "Expansion Factor",
+          "type": "number"
         }
       },
       "required": [],
@@ -119,22 +108,22 @@
           "default": {
             "auto_scale_or_custom": "Auto-scale"
           },
-          "title": "Grid Cell Size",
-          "ecoscope:advanced": true
+          "ecoscope:advanced": true,
+          "title": "Grid Cell Size"
         },
         "max_speed_factor": {
           "default": 1.05,
-          "title": "Max Speed Factor (Kilometers per Hour)",
-          "type": "number",
           "description": "An estimate of the subject's maximum speed as a factor of the maximum measured speed value in the dataset.",
-          "ecoscope:advanced": true
+          "ecoscope:advanced": true,
+          "title": "Max Speed Factor (Kilometers per Hour)",
+          "type": "number"
         },
         "expansion_factor": {
           "default": 1.05,
-          "title": "Shape Buffer Expansion Factor",
-          "type": "number",
           "description": "Controls how far time density values spread across the grid, affecting the smoothness of the output.",
-          "ecoscope:advanced": true
+          "ecoscope:advanced": true,
+          "title": "Shape Buffer Expansion Factor",
+          "type": "number"
         }
       },
       "required": [],
@@ -190,9 +179,6 @@
           "const": "Auto-scale",
           "default": "Auto-scale",
           "ecoscope:advanced": true,
-          "enum": [
-            "Auto-scale"
-          ],
           "title": "Grid Cell Size",
           "type": "string"
         }
@@ -206,9 +192,6 @@
           "const": "Customize",
           "default": "Customize",
           "ecoscope:advanced": true,
-          "enum": [
-            "Customize"
-          ],
           "title": "Grid Cell Size",
           "type": "string"
         },
@@ -238,8 +221,7 @@
       "ui:order": [
         "since",
         "until",
-        "timezone",
-        "time_format"
+        "timezone"
       ]
     },
     "td": {
